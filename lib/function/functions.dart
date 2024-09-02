@@ -2,37 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../data/devices.dart';
+
 //add method
-void add(
-    {required Icon LeadIcon,
-    required Icon trailIcon,
-    required String subtitle,
-    required String title,
-    required var box,
-    required MyDevice device}) async {
+Future<void> add({
+  required MyDevice device,
+  required int ID,
+  required String name,
+  required String type,
+  required bool reserved,
+  required var box,
+}) async {
   device
-    ..LeadIcon = LeadIcon
-    ..title = title
-    ..subtitle = subtitle
-    ..trailIcon = trailIcon;
+    ..ID = ID
+    ..name = name
+    ..type = type
+    ..reserved = reserved;
   await box.add(device);
 }
+
 //save method
-void save(
+Future<void> save(
     {required MyDevice device,
-    required Icon LeadIcon,
-    required Icon trailIcon,
-    required String subtitle,
-    required String title}) async {
+    required int ID,
+    required String name,
+    required String type,
+    required bool reserved}) async {
   device
-    ..trailIcon = trailIcon
-    ..subtitle = subtitle
-    ..title = title
-    ..LeadIcon = LeadIcon;
+    ..ID = ID
+    ..name = name
+    ..type = type
+    ..reserved = reserved;
   await device.save();
 }
+
 //delete method
-void delete({
+Future<void> delete({
   required var box,
   required MyDevice device,
 }) async {
