@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:untitled8/widgets/custom_card.dart';
 
+import 'add_devices.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -23,62 +25,66 @@ class HomeScreen extends StatelessWidget {
               itemCount: 4,
               itemBuilder: (context, index) {
                 return Slidable(
-                    // Specify a key if the Slidable is dismissible.
-                    key: const ValueKey(0),
-
-                    // The start action pane is the one at the left or the top side.
-                    startActionPane: ActionPane(
-                      // A motion is a widget used to control how the pane animates.
-                      motion: const ScrollMotion(),
-
-                      // A pane can dismiss the Slidable.
-                      dismissible: DismissiblePane(onDismissed: () {}),
-
-                      // All actions are defined in the children parameter.
-                      children: [
-                        // A SlidableAction can have an icon and/or a label.
-                        SlidableAction(
-                          onPressed: (context) => () {},
-                          backgroundColor: Color(0xFFFE4A49),
-                          foregroundColor: Colors.white,
-                          icon: Icons.delete,
-                          label: 'Delete',
-                        ),
-                      ],
-                    ),
-
-                    // The end action pane is the one at the right or the bottom side.
-                    endActionPane: ActionPane(
-                      motion: const ScrollMotion(),
-                      children: [
-                        SlidableAction(
-                          onPressed: (context) => () {},
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          icon: Icons.edit,
-                          label: 'Edit',
-                        ),
-                      ],
-                    ),
-
-                    // The child of the Slidable is what the user sees when the
-                    // component is not dragged.
-                    child: CustomCard(
-                      leading: const Icon(Icons.laptop),
-                      title: const Text('Laptop'),
-                      subtitle: const Text('6800 SYP per hour'),
-                      color: Colors.green,
-                    ));
+                  key: const ValueKey(0),
+                  startActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    dismissible: DismissiblePane(onDismissed: () {}),
+                    children: [
+                      SlidableAction(
+                        onPressed: (context) => () {},
+                        backgroundColor: const Color(0xFFFE4A49),
+                        foregroundColor: Colors.white,
+                        icon: Icons.delete,
+                        label: 'Delete',
+                      ),
+                    ],
+                  ),
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (context) => () {},
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        icon: Icons.edit,
+                        label: 'Edit',
+                      ),
+                    ],
+                  ),
+                  child: CustomCard(
+                    leading: const Icon(Icons.laptop),
+                    title: const Text('Laptop'),
+                    subtitle: const Text('6800 SYP per hour'),
+                    color: Colors.green,
+                  ),
+                );
               },
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {},
-            child: Icon(Icons.add),
+            onPressed: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: false,
+                builder: (BuildContext context) => AddDevices()),
+            child: const Icon(Icons.add),
             backgroundColor: Colors.green,
           ),
         );
       },
     );
   }
+}
+
+_openBottomSheet(BuildContext context, Widget wid) {
+  showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => BottomSheet(
+          enableDrag: true,
+          showDragHandle: true,
+          onClosing: () {},
+          builder: (context) => Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: AddDevices(),
+              )));
 }
