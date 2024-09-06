@@ -1,36 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
+import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/widgets/custom_card.dart';
-
-import '../data/devices.dart';
-import '../function/functions.dart';
 import 'add_devices.dart';
+import 'edit_device.dart';
 
-class HomeScreen extends StatefulWidget {
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  List <MyDevice> devices = [];
-  late Box box;
-
-  Future<void> _loadDevices() async {
-    devices = box.values.toList().cast<MyDevice>();
-    setState(() {});
-  }
-
-  @override
-  void initState() async {
-    super.initState();
-    var box = await Hive.openBox('myBox');
-    await _loadDevices();
-  }
-
+class HomeScreen extends StatelessWidget {
+late int Index;
   @override
   Widget build(BuildContext context) {
+    final MyHiveService = Provider.of<HiveService>(context);
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,
@@ -43,15 +24,16 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Padding(
             padding: EdgeInsets.all(16.0),
             child: ListView.builder(
-              itemCount: devices.length,
+              itemCount: MyHiveService.devices.length,
               itemBuilder: (context, index) {
                 return Slidable(
-                  key: ValueKey(devices[index]),
+                  key: ValueKey(MyHiveService.devices[index].ID),
                   startActionPane: ActionPane(
                     motion: const ScrollMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) => delete(box:box,device: devices[index]),
+                        onPressed: (context) {
+                            MyHiveService.deleteDevice(index: index);},
                         backgroundColor: const Color(0xFFFE4A49),
                         foregroundColor: Colors.white,
                         icon: Icons.delete,
@@ -63,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     motion: const ScrollMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) => (){},
+                        onPressed: (context) =>_openBottomSheet(context,EditDevice(index: index,)),
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
                         icon: Icons.edit,
@@ -82,11 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () =>
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: false,
-                    builder: (BuildContext context) => AddDevices()),
+            onPressed: () => _openBottomSheet(context,AddDevice()),
             child: const Icon(Icons.add),
             backgroundColor: Colors.green,
           ),
@@ -94,20 +72,24 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-}
-
-_openBottomSheet(BuildContext context, Widget wid) {
-  showModalBottomSheet(
+  _openBottomSheet(BuildContext context, Widget wid) {
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) =>
           BottomSheet(
-              enableDrag: true,
-              showDragHandle: true,
-              onClosing: () {},
-              builder: (context) =>
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: AddDevices(),
-                  )));
+            enableDrag: true,
+            showDragHandle: true,
+            onClosing: () {},
+            builder: (context) =>
+                Padding(
+                  padding: MediaQuery.of(context).viewInsets,
+                  child: wid,
+                ),
+          ),
+    );
+  }
+
 }
+
+

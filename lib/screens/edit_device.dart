@@ -7,12 +7,14 @@ import 'package:uuid/uuid.dart';
 
 import '../data/DropDown_Items.dart';
 
-class AddDevice extends StatelessWidget {
+class EditDevice extends StatelessWidget {
   TextEditingController name = TextEditingController();
   TextEditingController price = TextEditingController();
   String type = '';
   var uuid = Uuid();
+  int index;
 
+  EditDevice({required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -104,14 +106,15 @@ class AddDevice extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   side: BorderSide(color: Colors.grey, width: 1)),
-              onPressed: () => MyHiveService.addDevice(
+              onPressed: () => MyHiveService.updateDevice(
+                  index: index,
                   device: MyDevice(
                       type: type,
                       reserved: false,
                       name: name.text,
-                      ID: uuid.v4())),
+                      ID: MyHiveService.devices[index].ID)),
               child: Text(
-                'Add Device',
+                'Update Device',
                 style: TextStyle(color: Colors.white),
               ))
         ],

@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:untitled8/screens/home_screen.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:untitled8/services/hive_service.dart';
+import 'data/devices.dart';
+import 'screens/home_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
   runApp(
-    MaterialApp(debugShowCheckedModeBanner: false, home: HomeScreen()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HiveService()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: HomeScreen(),
+      ),
+    ),
   );
 }
