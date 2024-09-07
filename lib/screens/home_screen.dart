@@ -8,10 +8,12 @@ import 'add_devices.dart';
 import 'edit_device.dart';
 
 class HomeScreen extends StatelessWidget {
-late int Index;
   @override
   Widget build(BuildContext context) {
-    final MyHiveService = Provider.of<HiveService>(context);
+    final hiveService = Provider.of<HiveService>(context);
+    if (!hiveService.isInitialized) {
+      return Center(child: CircularProgressIndicator());
+    }
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,
@@ -24,16 +26,16 @@ late int Index;
           body: Padding(
             padding: EdgeInsets.all(16.0),
             child: ListView.builder(
-              itemCount: MyHiveService.devices.length,
+              itemCount: hiveService.devices.length,
               itemBuilder: (context, index) {
                 return Slidable(
-                  key: ValueKey(MyHiveService.devices[index].ID),
+                  key: ValueKey(hiveService.devices[index].ID),
                   startActionPane: ActionPane(
                     motion: const ScrollMotion(),
                     children: [
                       SlidableAction(
                         onPressed: (context) {
-                            MyHiveService.deleteDevice(index: index);},
+                          _showDeleteConfirmationDialog(context, hiveService, index);                        },
                         backgroundColor: const Color(0xFFFE4A49),
                         foregroundColor: Colors.white,
                         icon: Icons.delete,
@@ -45,7 +47,11 @@ late int Index;
                     motion: const ScrollMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) =>_openBottomSheet(context,EditDevice(index: index,)),
+                        onPressed: (context) => _openBottomSheet(
+                            context,
+                            EditDevice(
+                              index: index,
+                            )),
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
                         icon: Icons.edit,
@@ -55,8 +61,8 @@ late int Index;
                   ),
                   child: CustomCard(
                     leading: const Icon(Icons.laptop),
-                    title: const Text('Laptop'),
-                    subtitle: const Text('6800 SYP per hour'),
+                    title: Text(hiveService.devices[index].name),
+                    subtitle: Text('${hiveService.devices[index].price} per hour'),
                     color: Colors.green,
                   ),
                 );
@@ -64,7 +70,7 @@ late int Index;
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => _openBottomSheet(context,AddDevice()),
+            onPressed: () => _openBottomSheet(context, AddDevice()),
             child: const Icon(Icons.add),
             backgroundColor: Colors.green,
           ),
@@ -72,24 +78,47 @@ late int Index;
       },
     );
   }
+  void _showDeleteConfirmationDialog(BuildContext context, HiveService hiveService, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete this device?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                hiveService.deleteDevice(index: index);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   _openBottomSheet(BuildContext context, Widget wid) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) =>
-          BottomSheet(
-            enableDrag: true,
-            showDragHandle: true,
-            onClosing: () {},
-            builder: (context) =>
-                Padding(
-                  padding: MediaQuery.of(context).viewInsets,
-                  child: wid,
-                ),
-          ),
+      builder: (BuildContext context) => BottomSheet(
+        enableDrag: true,
+        showDragHandle: true,
+        onClosing: () {},
+        builder: (context) => Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: wid,
+        ),
+      ),
     );
   }
-
 }
-
-

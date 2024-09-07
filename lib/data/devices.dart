@@ -12,8 +12,10 @@ class MyDevice extends HiveObject {
   late String type;
   @HiveField(3)
   late bool reserved;
+  @HiveField(4)
+  late String price;
 
   MyDevice({
-    this.ID = '', this.type = '', this.name = '', this.reserved = false,
+    this.ID = '', this.type = '', this.name = '', this.reserved = false,this.price='0',
   });
 }

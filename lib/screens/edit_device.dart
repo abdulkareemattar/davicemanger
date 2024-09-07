@@ -8,10 +8,10 @@ import 'package:uuid/uuid.dart';
 import '../data/DropDown_Items.dart';
 
 class EditDevice extends StatelessWidget {
-  TextEditingController name = TextEditingController();
-  TextEditingController price = TextEditingController();
-  String type = '';
-  var uuid = Uuid();
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _price = TextEditingController();
+  String type = 'PC';
+  final uuid = Uuid();
   int index;
 
   EditDevice({required this.index});
@@ -36,7 +36,7 @@ class EditDevice extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(20),
             child: TextFormField(
-              controller: name,
+              controller: _name,
               decoration: InputDecoration(
                 labelStyle: const TextStyle(
                   color: Colors.green,
@@ -57,7 +57,7 @@ class EditDevice extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(20),
             child: TextFormField(
-              controller: price,
+              controller: _price,
               decoration: InputDecoration(
                 labelStyle: const TextStyle(
                   color: Colors.green,
@@ -106,13 +106,14 @@ class EditDevice extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   side: BorderSide(color: Colors.grey, width: 1)),
-              onPressed: () => MyHiveService.updateDevice(
+              onPressed: () { MyHiveService.updateDevice(
                   index: index,
-                  device: MyDevice(
+                  device: MyDevice(price: _price.text,
                       type: type,
                       reserved: false,
-                      name: name.text,
-                      ID: MyHiveService.devices[index].ID)),
+                      name: _name.text,
+                      ID: MyHiveService.devices[index].ID));
+                Navigator.pop(context);},
               child: Text(
                 'Update Device',
                 style: TextStyle(color: Colors.white),

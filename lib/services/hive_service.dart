@@ -3,9 +3,10 @@ import 'package:hive/hive.dart';
 
 import '../data/devices.dart';
 
+
 class HiveService extends ChangeNotifier {
   late Box<MyDevice> _box;
-
+  bool _isInitialized = false;
   List<MyDevice> get devices => _box.values.toList();
 
   HiveService() {
@@ -15,8 +16,10 @@ class HiveService extends ChangeNotifier {
   Future<void> _init() async {
     Hive.registerAdapter(MyDeviceAdapter());
     _box = await Hive.openBox<MyDevice>('myDevices');
+    _isInitialized = true;
     notifyListeners();
   }
+  bool get isInitialized => _isInitialized;
 
   Future<void> addDevice({
     required MyDevice device,
