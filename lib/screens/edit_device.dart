@@ -9,7 +9,6 @@ import '../data/Device_Types_Enums.dart';
 import '../data/DropDown_Items.dart';
 
 class EditDevice extends StatelessWidget {
-
   DeviceTypesEnums type = DeviceTypesEnums.PC;
   final uuid = Uuid();
   int index;
@@ -19,8 +18,10 @@ class EditDevice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MyHiveService = Provider.of<HiveService>(context);
-    final TextEditingController _name = TextEditingController(text: MyHiveService.devices[index].name);
-    final TextEditingController _price = TextEditingController(text: MyHiveService.devices[index].price);
+    final TextEditingController _name =
+        TextEditingController(text: MyHiveService.devices[index].name);
+    final TextEditingController _price =
+        TextEditingController(text: MyHiveService.devices[index].price);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -104,9 +105,22 @@ class EditDevice extends StatelessWidget {
           ),
         ),
         Switch(
-            value: MyHiveService.devices[index].reserved,
-            onChanged:(value) { MyHiveService.changereserved(index: index);},
-            ),
+          activeTrackColor: Colors.yellow,
+          thumbColor: WidgetStateProperty.resolveWith<Color?>(
+              (Set<WidgetState> states) {
+            if (states.contains(WidgetState.disabled)) {
+              return Colors.red;
+            } else if (states.contains(WidgetState.selected)) {
+              return Colors.green;
+            } else {
+              return Colors.red;
+            }
+          }),
+          value: MyHiveService.devices[index].reserved,
+          onChanged: (value) {
+            MyHiveService.changereserved(index: index);
+          },
+        ),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 30.h),
           child: ElevatedButton(
@@ -117,10 +131,10 @@ class EditDevice extends StatelessWidget {
                 MyHiveService.updateDevice(
                     index: index,
                     device: MyDevice(
-                        price: _price.text,
-                        type: type,
+                        price: MyHiveService.devices[index].price,
+                        type:  MyHiveService.devices[index].type,
                         reserved: MyHiveService.devices[index].reserved,
-                        name: _name.text,
+                        name: MyHiveService.devices[index].name,
                         ID: MyHiveService.devices[index].ID));
                 Navigator.pop(context);
               },
