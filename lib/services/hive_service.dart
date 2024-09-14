@@ -12,9 +12,13 @@ class HiveService extends ChangeNotifier {
   HiveService() {
     _init();
   }
+  void UpdateUi  () {
+    notifyListeners();
+  }
 
   Future<void> _init() async {
     Hive.registerAdapter(MyDeviceAdapter());
+    Hive.registerAdapter(DeviceTypesEnumsAdapter());
     _box = await Hive.openBox<MyDevice>('myDevices');
     _isInitialized = true;
     notifyListeners();
@@ -42,4 +46,8 @@ class HiveService extends ChangeNotifier {
     await _box.deleteAt(index);
     notifyListeners();
   }
+void changereserved ({required index}){
+    devices[index].reserved=!devices[index].reserved;
+    notifyListeners();
+}
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/widgets/custom_card.dart';
+
+import '../data/Device_Types_Enums.dart';
 import 'add_devices.dart';
 import 'edit_device.dart';
 
@@ -12,7 +15,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final hiveService = Provider.of<HiveService>(context);
     if (!hiveService.isInitialized) {
-      return Center(child: CircularProgressIndicator());
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return ScreenUtilInit(
       designSize: const Size(360, 690),
@@ -35,10 +38,12 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       SlidableAction(
                         onPressed: (context) {
-                          _showDeleteConfirmationDialog(context, hiveService, index);                        },
+                          _showDeleteConfirmationDialog(
+                              context, hiveService, index);
+                        },
                         backgroundColor: const Color(0xFFFE4A49),
                         foregroundColor: Colors.white,
-                        icon: Icons.delete,
+                        icon: FontAwesomeIcons.trash,
                         label: 'Delete',
                       ),
                     ],
@@ -47,23 +52,29 @@ class HomeScreen extends StatelessWidget {
                     motion: const ScrollMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (context) => _openBottomSheet(
-                            context,
-                            EditDevice(
-                              index: index,
-                            )),
+                        onPressed: (context) =>
+                            _openBottomSheet(
+                                context,
+                                EditDevice(
+                                  index: index,
+                                )),
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
-                        icon: Icons.edit,
+                        icon: FontAwesomeIcons.penToSquare,
                         label: 'Edit',
                       ),
                     ],
                   ),
                   child: CustomCard(
-                    leading: const Icon(Icons.laptop),
+                    index: index,
+                    leading: getDeviceIcon(
+                        type: hiveService.devices[index].type) as Widget,
                     title: Text(hiveService.devices[index].name),
-                    subtitle: Text('${hiveService.devices[index].price} per hour'),
-                    color: Colors.green,
+                    subtitle:
+                    Text('${hiveService.devices[index].price} per hour'),
+                    color: (hiveService.devices[index].reserved == false)
+                        ? Colors.red
+                        : Colors.green,
                   ),
                 );
               },
@@ -71,14 +82,19 @@ class HomeScreen extends StatelessWidget {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () => _openBottomSheet(context, AddDevice()),
-            child: const Icon(Icons.add),
+            child: const Icon(
+              FontAwesomeIcons.plus,
+              color: Colors.white,
+            ),
             backgroundColor: Colors.green,
           ),
         );
       },
     );
   }
-  void _showDeleteConfirmationDialog(BuildContext context, HiveService hiveService, int index) {
+
+  void _showDeleteConfirmationDialog(BuildContext context,
+      HiveService hiveService, int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -105,20 +121,21 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
-  _openBottomSheet(BuildContext context, Widget wid) {
+  void _openBottomSheet(BuildContext context, Widget wid) {
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) => BottomSheet(
+        context: context,
+        isScrollControlled: true,
         enableDrag: true,
-        showDragHandle: true,
-        onClosing: () {},
-        builder: (context) => Padding(
-          padding: MediaQuery.of(context).viewInsets,
-          child: wid,
-        ),
-      ),
+        // تمكين السحب
+        isDismissible: true,
+        builder: (BuildContext context) {
+          return Padding(
+            padding: MediaQuery
+                .of(context)
+                .viewInsets,
+            child: wid,
+          );
+        }
     );
   }
 }

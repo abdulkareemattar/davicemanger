@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:untitled8/data/Device_Types_Enums.dart';
 import 'package:untitled8/data/devices.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:uuid/uuid.dart';
 
+import '../data/DropDown_Items.dart';
+
 class AddDevice extends StatelessWidget {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _price = TextEditingController();
-  String type = 'PC';
+  DeviceTypesEnums type = DeviceTypesEnums.PC;
   final uuid = Uuid();
   final _formKey = GlobalKey<FormState>();
 
@@ -17,12 +20,10 @@ class AddDevice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MyHiveService = Provider.of<HiveService>(context);
-
-    return SizedBox(
-      height: 900.h,
-      child: Form(
+return
+     Form(
         key: _formKey,
-        child: Column(
+        child: Column(mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: EdgeInsets.symmetric(vertical: 30.h),
@@ -55,7 +56,7 @@ class AddDevice extends StatelessWidget {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a device name';
-                  } else if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                  } else if (!RegExp(r'^[a-zA-Z ]+$').hasMatch(value)) {
                     return 'Please enter only letters';
                   }
                   return null;
@@ -93,7 +94,8 @@ class AddDevice extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.all(20.0),
-              child: DropdownButtonFormField<String>(
+              child: DropdownButtonFormField<DeviceTypesEnums>(
+                icon: getDeviceIcon(type: type),
                 value: type,
                 decoration: InputDecoration(
                   labelText: 'Select Device Type',
@@ -107,68 +109,54 @@ class AddDevice extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                items: [
-                  DropdownMenuItem(
-                    value: 'PC',
-                    child: Text('PC'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'PS',
-                    child: Text('PS'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Xbox',
-                    child: Text('Xbox'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Laptop',
-                    child: Text('Laptop'),
-                  ),
-                ],
+                items: dropdownitems,
                 onChanged: (value) {
                   type = value!;
+                  MyHiveService.UpdateUi();
                 },
                 hint: Text(
                   'Select a device type',
                   style: TextStyle(color: Colors.green),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null) {
                     return 'Please select a device type';
                   }
                   return null;
                 },
               ),
             ),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    side: BorderSide(color: Colors.grey, width: 1)),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    MyHiveService.addDevice(
-                      device: MyDevice(
-                          type: type,
-                          reserved: false,
-                          name: _name.text,
-                          ID: uuid.v4(),
-                          price: _price.text),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Device added successfully'),
-                      ),
-                    );
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text(
-                  'Add Device',
-                  style: TextStyle(color: Colors.white),
-                ))
+            Padding(
+              padding:  EdgeInsets.symmetric(vertical: 30.h),
+              child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      side: BorderSide(color: Colors.grey, width: 1)),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      MyHiveService.addDevice(
+                        device: MyDevice(
+                            type: type,
+                            reserved: false,
+                            name: _name.text,
+                            ID: uuid.v4(),
+                            price: _price.text),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Device added successfully'),
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text(
+                    'Add Device',
+                    style: TextStyle(color: Colors.white),
+                  )),
+            )
           ],
         ),
-      ),
     );
   }
 }
