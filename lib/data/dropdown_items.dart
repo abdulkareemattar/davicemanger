@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'Device_Types_Enums.dart';
 import 'devices.dart';
 
 List<DropdownMenuItem<DeviceTypesEnums>> dropdownitems= [

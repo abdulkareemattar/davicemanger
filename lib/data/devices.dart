@@ -1,7 +1,5 @@
 import 'package:hive/hive.dart';
 
-import 'Device_Types_Enums.dart';
-
 part 'devices.g.dart';
 @HiveType(typeId: 1)
 enum DeviceTypesEnums {
@@ -34,5 +32,14 @@ class MyDevice extends HiveObject {
     this.ID = '', this.type = DeviceTypesEnums
         .PC, this.name = '', this.reserved = false, this.price = '0',
   });
-}
 
+
+}
+@HiveType(typeId: 3)
+class ReserveInformation extends HiveObject
+{
+  @HiveField(0)
+  late String customerName;
+  @HiveField(1)
+  late String TimeStart;
+}

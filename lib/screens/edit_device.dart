@@ -5,15 +5,16 @@ import 'package:untitled8/data/devices.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:uuid/uuid.dart';
 
-import '../data/Device_Types_Enums.dart';
-import '../data/DropDown_Items.dart';
+import '../Functions/get_device_icon.dart';
+import '../data/dropdown_items.dart';
+import '../widgets/custom_button.dart';
 
 class EditDevice extends StatelessWidget {
-  DeviceTypesEnums type = DeviceTypesEnums.PC;
   final uuid = Uuid();
   int index;
 
   EditDevice({required this.index});
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +97,7 @@ class EditDevice extends StatelessWidget {
             ),
             items: dropdownitems,
             onChanged: (value) {
-              type = value!;
+              MyHiveService.devices[index].type = value!;
             },
             hint: Text(
               'Select a device type',
@@ -105,7 +106,7 @@ class EditDevice extends StatelessWidget {
           ),
         ),
         Switch(
-          activeTrackColor: Colors.yellow,
+          activeTrackColor: Colors.amber,
           thumbColor: WidgetStateProperty.resolveWith<Color?>(
               (Set<WidgetState> states) {
             if (states.contains(WidgetState.disabled)) {
@@ -123,25 +124,19 @@ class EditDevice extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 30.h),
-          child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  side: BorderSide(color: Colors.grey, width: 1)),
-              onPressed: () {
-                MyHiveService.updateDevice(
-                    index: index,
-                    device: MyDevice(
-                        price: MyHiveService.devices[index].price,
-                        type:  MyHiveService.devices[index].type,
-                        reserved: MyHiveService.devices[index].reserved,
-                        name: MyHiveService.devices[index].name,
-                        ID: MyHiveService.devices[index].ID));
-                Navigator.pop(context);
-              },
-              child: Text(
-                'Update Device',
-                style: TextStyle(color: Colors.white),
-              )),
+          child: CustomButton(txt: 'Update this device',
+            onpressed: () {
+              MyHiveService.updateDevice(
+                  index: index,
+                  device: MyDevice(
+                      price: MyHiveService.devices[index].price,
+                      type: MyHiveService.devices[index].type,
+                      reserved: MyHiveService.devices[index].reserved,
+                      name: MyHiveService.devices[index].name,
+                      ID: MyHiveService.devices[index].ID));
+              Navigator.pop(context);
+            },
+          ),
         )
       ],
     );
