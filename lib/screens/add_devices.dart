@@ -14,8 +14,6 @@ import '../data/dropdown_items.dart';
 class AddDevice extends StatelessWidget {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _price = TextEditingController();
-  bool value = false;
-  DeviceTypesEnums? type;
   final uuid = Uuid();
   final _formKey = GlobalKey<FormState>();
 
@@ -23,7 +21,7 @@ class AddDevice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MyHiveService = Provider.of<HiveService>(context);
+    final myHiveService = Provider.of<HiveService>(context);
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
@@ -44,6 +42,7 @@ class AddDevice extends StatelessWidget {
                     )),
               ),
               CustomTextFormField(
+                txt: 'Enter device name :',
                 validate: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a device name';
@@ -55,6 +54,7 @@ class AddDevice extends StatelessWidget {
                 keyboard: TextInputType.name,
               ),
               CustomTextFormField(
+                txt: 'Enter the price of hour for reservation this device :',
                 validate: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a price';
@@ -70,8 +70,8 @@ class AddDevice extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: DropdownButtonFormField<DeviceTypesEnums>(
-                  icon: (type != null)
-                      ? getDeviceIcon(type: type!)
+                  icon: (myHiveService.type != null)
+                      ? getDeviceIcon(type: myHiveService.type!)
                       : Icon(FontAwesomeIcons.desktop, color: Colors.green),
                   value: null,
                   decoration: InputDecoration(
@@ -89,11 +89,8 @@ class AddDevice extends StatelessWidget {
                     ),
                   ),
                   items: dropdownitems,
-                  onChanged: (value) {
-                    type = value!;
-                    MyHiveService.UpdateUi();
-                  },
-                  hint: Text(
+                  onChanged:(value) => myHiveService.dropDownSelectType(value!),
+                  hint: const Text(
                     'Select a device type',
                     style: TextStyle(color: Colors.green),
                   ),
@@ -106,10 +103,9 @@ class AddDevice extends StatelessWidget {
                 ),
               ),
               CustomSwitch(
-                value: value,
-                onChanged: (newvalue) {
-                  value = newvalue;
-                  MyHiveService.UpdateUi();
+                value: myHiveService.isReserved,
+                onChanged: (value) {
+                  myHiveService.setSwitch(value);
                 },
               ),
               Padding(
@@ -117,19 +113,19 @@ class AddDevice extends StatelessWidget {
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
-                        side: BorderSide(color: Colors.grey, width: 1)),
+                        side: const BorderSide(color: Colors.grey, width: 1)),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        MyHiveService.addDevice(
+                        myHiveService.addDevice(
                           device: MyDevice(
-                              type: type!,
-                              reserved: value,
+                              type: myHiveService.type!,
+                              reserved: myHiveService.isReserved,
                               name: _name.text,
                               ID: uuid.v4(),
                               price: _price.text),
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             backgroundColor: Colors.amberAccent,
                             content: Text(
                               'Device added successfully',
@@ -140,7 +136,7 @@ class AddDevice extends StatelessWidget {
                         Navigator.pop(context);
                       }
                     },
-                    child: Text(
+                    child: const Text(
                       'Add Device',
                       style: TextStyle(color: Colors.white),
                     )),

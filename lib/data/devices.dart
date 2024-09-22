@@ -41,5 +41,7 @@ class ReserveInformation extends HiveObject
   @HiveField(0)
   late String customerName;
   @HiveField(1)
-  late String TimeStart;
+  late DateTime selectedTime;
+  @HiveField(2)
+  late int index;
 }

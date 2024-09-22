@@ -3,17 +3,16 @@ import 'package:hive/hive.dart';
 
 import '../data/devices.dart';
 
-
 class HiveService extends ChangeNotifier {
   late Box<MyDevice> _box;
   bool _isInitialized = false;
+  bool isReserved = false;
+  DeviceTypesEnums? type;
+
   List<MyDevice> get devices => _box.values.toList();
 
   HiveService() {
     _init();
-  }
-  void UpdateUi  () {
-    notifyListeners();
   }
 
   Future<void> _init() async {
@@ -23,6 +22,7 @@ class HiveService extends ChangeNotifier {
     _isInitialized = true;
     notifyListeners();
   }
+
   bool get isInitialized => _isInitialized;
 
   Future<void> addDevice({
@@ -46,8 +46,19 @@ class HiveService extends ChangeNotifier {
     await _box.deleteAt(index);
     notifyListeners();
   }
-void changereserved ({required index}){
-    devices[index].reserved=!devices[index].reserved;
+
+  void editReserved({required index}) {
+    devices[index].reserved = !devices[index].reserved;
     notifyListeners();
-}
+  }
+
+  void setSwitch(bool newValue) {
+    isReserved = newValue;
+    notifyListeners();
+  }
+
+  void dropDownSelectType(DeviceTypesEnums newValue) {
+    type = newValue;
+    notifyListeners();
+  }
 }

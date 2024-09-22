@@ -119,7 +119,7 @@ class EditDevice extends StatelessWidget {
           }),
           value: MyHiveService.devices[index].reserved,
           onChanged: (value) {
-            MyHiveService.changereserved(index: index);
+            MyHiveService.editReserved(index: index);
           },
         ),
         Padding(

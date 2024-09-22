@@ -31,7 +31,7 @@ class DataScreen extends StatelessWidget {
             child: Text(
               'My Devices :',
               style: TextStyle(
-                  shadows: [
+                  shadows: const[
                     BoxShadow(
                         color: Colors.black,
                         blurRadius: 1,

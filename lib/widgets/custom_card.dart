@@ -39,7 +39,7 @@ class CustomCard extends StatelessWidget {
           onTap: () {
             final hiveservice =
                 Provider.of<HiveService>(context, listen: false);
-            hiveservice.changereserved(index: index);
+            hiveservice.editReserved(index: index);
           },
           child: Container(
             width: 20.w,
