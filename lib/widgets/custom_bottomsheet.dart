@@ -4,8 +4,8 @@ void openBottomSheet(BuildContext context, Widget wid) {
   showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      enableDrag: true,
-      isDismissible: true,
+      enableDrag: false,
+      isDismissible: false,
       builder: (BuildContext context) {
         return Padding(
           padding: MediaQuery.of(context).viewInsets,

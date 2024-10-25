@@ -6,139 +6,135 @@ import 'package:untitled8/services/hive_service.dart';
 import 'package:uuid/uuid.dart';
 
 import '../Functions/get_device_icon.dart';
-import '../data/dropdown_items.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/custom_dropdown.dart';
+import '../widgets/custom_switch.dart';
+import '../widgets/custom_textformfield.dart';
+import 'edit_reservation.dart';
 
 class EditDevice extends StatelessWidget {
-  final uuid = Uuid();
+  final uuid = const Uuid();
   int index;
 
-  EditDevice({required this.index});
-
+  EditDevice({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final MyHiveService = Provider.of<HiveService>(context);
-    final TextEditingController _name =
-        TextEditingController(text: MyHiveService.devices[index].name);
-    final TextEditingController _price =
-        TextEditingController(text: MyHiveService.devices[index].price);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 30.h),
-          child: Title(
-              color: Colors.grey,
-              child: Text(
-                'Edit " ${MyHiveService.devices[index].name} " device',
-                style: TextStyle(color: Colors.green, fontSize: 20.sp),
-              )),
+    final myHiveServiceListenIsTrue = Provider.of<HiveService>(context);
+    final myHiveServiceListenIsFalse =
+        Provider.of<HiveService>(context, listen: false);
+    final TextEditingController name = TextEditingController(
+        text: myHiveServiceListenIsTrue.devices[index].name);
+    final TextEditingController price = TextEditingController(
+        text: myHiveServiceListenIsTrue.devices[index].price);
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: TextFormField(
-            controller: _name,
-            decoration: InputDecoration(
-              labelStyle: const TextStyle(
-                color: Colors.green,
-                fontSize: 20,
-              ),
-              labelText: 'device name',
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.green, width: 3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.green, width: 3),
-                borderRadius: BorderRadius.circular(8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 30.h),
+              child: Title(
+                color: Colors.grey,
+                child: Text(
+                  'Edit " ${myHiveServiceListenIsTrue.devices[index].name} " device',
+                  style: TextStyle(color: Colors.green, fontSize: 20.sp),
+                ),
               ),
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: TextFormField(
-            controller: _price,
-            decoration: InputDecoration(
-              labelStyle: const TextStyle(
-                color: Colors.green,
-                fontSize: 20,
-              ),
-              labelText: 'price per hour',
-              // اضغط على labelText بدلاً من label
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.green, width: 3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.green, width: 3),
-                borderRadius: BorderRadius.circular(8),
-              ),
+            CustomTextFormField(
+              txt: 'Enter device name:',
+              validate: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter a device name';
+                }
+                return null;
+              },
+              controller: name,
+              label: 'Device Name',
+              keyboard: TextInputType.name,
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: DropdownButtonFormField<DeviceTypesEnums>(
-            value: MyHiveService.devices[index].type,
-            icon: getDeviceIcon(type: MyHiveService.devices[index].type),
-            decoration: InputDecoration(
-              labelText: 'Select Device Type',
-              labelStyle: TextStyle(color: Colors.green),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.grey, width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.grey, width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
+            CustomTextFormField(
+              txt: 'Enter the price per hour for reserving this device:',
+              validate: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter a price';
+                } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                  return 'Please enter only numbers';
+                }
+                return null;
+              },
+              controller: price,
+              label: 'Price per hour',
+              keyboard: TextInputType.number,
             ),
-            items: dropdownitems,
-            onChanged: (value) {
-              MyHiveService.devices[index].type = value!;
-            },
-            hint: Text(
-              'Select a device type',
-              style: TextStyle(color: Colors.green),
+            CustomDropdown(
+              icon: getDeviceIcon(
+                  type: myHiveServiceListenIsTrue.devices[index].type),
+              value: myHiveServiceListenIsTrue.devices[index].type,
+              onChanged: (value) {
+                myHiveServiceListenIsTrue.devices[index].type = value!;
+              },
             ),
-          ),
-        ),
-        Switch(
-          activeTrackColor: Colors.amber,
-          thumbColor: WidgetStateProperty.resolveWith<Color?>(
-              (Set<WidgetState> states) {
-            if (states.contains(WidgetState.disabled)) {
-              return Colors.red;
-            } else if (states.contains(WidgetState.selected)) {
-              return Colors.green;
-            } else {
-              return Colors.red;
-            }
-          }),
-          value: MyHiveService.devices[index].reserved,
-          onChanged: (value) {
-            MyHiveService.editReserved(index: index);
-          },
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 30.h),
-          child: CustomButton(txt: 'Update this device',
-            onpressed: () {
-              MyHiveService.updateDevice(
+            (myHiveServiceListenIsFalse.devices[index].reserved)
+                ? CustomButton(
+                    onpressed: () => showEditReservationDialog(
+                          context: context,
+                          index: index,
+                          notDoublePop: true,
+                        ),
+                    txt: 'Edit the reservation time',
+                    color: Colors.orange)
+                : const SizedBox(),
+            CustomSwitch(
+              value: myHiveServiceListenIsTrue.devices[index].reserved,
+              onChanged: (value) {
+                myHiveServiceListenIsTrue.reservation(
                   index: index,
-                  device: MyDevice(
-                      price: MyHiveService.devices[index].price,
-                      type: MyHiveService.devices[index].type,
-                      reserved: MyHiveService.devices[index].reserved,
-                      name: MyHiveService.devices[index].name,
-                      ID: MyHiveService.devices[index].ID));
-              Navigator.pop(context);
-            },
-          ),
-        )
-      ],
+                  isNewDevice: false,
+                  newValue: value,
+                );
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 30.h),
+                  child: CustomButton(
+                    txt: 'Update this device',
+                    onpressed: () {
+                      myHiveServiceListenIsTrue.updateDevice(
+                        index: index,
+                        device: MyDevice(
+                          price: price.text,
+                          type: myHiveServiceListenIsTrue.devices[index].type,
+                          reserved:
+                              myHiveServiceListenIsTrue.devices[index].reserved,
+                          name: name.text,
+                          ID: myHiveServiceListenIsTrue.devices[index].ID,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    },
+                    color: Colors.green,
+                  ),
+                ),
+                CustomButton(
+                  onpressed: () {
+                    Navigator.pop(context);
+                  },
+                  txt: 'Cancel',
+                  color: Colors.red,
+                )
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

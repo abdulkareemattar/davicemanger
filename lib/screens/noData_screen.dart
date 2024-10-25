@@ -36,7 +36,7 @@ class NoDataScreen extends StatelessWidget {
           SizedBox(height: 30.h),
           ElevatedButton(
             onPressed: () {
-              _openBottomSheet(context,AddDevice());
+              _openBottomSheet(context,AddDeviceForm());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber[700],

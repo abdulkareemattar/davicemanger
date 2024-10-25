@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
-  const CustomButton({super.key, required this.onpressed, required this.txt});
+  const CustomButton({super.key, required this.onpressed, required this.txt, required this.color});
 
   final VoidCallback onpressed;
   final String txt;
+  final Color color;
 
   @override
   Widget build(
@@ -12,12 +13,12 @@ class CustomButton extends StatelessWidget {
   ) {
     return ElevatedButton(
         style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            side: BorderSide(color: Colors.amber, width: 2)),
+            backgroundColor: color,
+            side: const BorderSide(color: Colors.amber, width: 2)),
         onPressed: onpressed,
         child: Text(
           txt,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ));
   }
 }

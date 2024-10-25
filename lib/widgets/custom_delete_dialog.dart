@@ -8,17 +8,17 @@ void showDeleteConfirmationDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete this device?'),
+        title: const Text('Confirm Delete'),
+        content: const Text('Are you sure you want to delete this device?'),
         actions: <Widget>[
           TextButton(
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           TextButton(
-            child: Text('Delete'),
+            child: const Text('Delete'),
             onPressed: () {
               hiveService.deleteDevice(index: index);
               Navigator.of(context).pop();

@@ -10,9 +10,11 @@ import 'add_devices.dart';
 import 'noData_screen.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final hiveService = Provider.of<HiveService>(context);
+    final myHiveService = Provider.of<HiveService>(context);
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,
@@ -25,7 +27,7 @@ class HomeScreen extends StatelessWidget {
               title: Text(
                 'Gaming Area',
                 style: TextStyle(
-                    shadows: [
+                    shadows: const [
                       BoxShadow(offset: Offset(2, 1), color: Colors.black)
                     ],
                     fontWeight: FontWeight.bold,
@@ -34,7 +36,7 @@ class HomeScreen extends StatelessWidget {
               ),
               centerTitle: true,
               flexibleSpace: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       Colors.amber,
@@ -44,13 +46,14 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: (!hiveService.isInitialized)
-                ? Scaffold(body: Center(child: CircularProgressIndicator()))
-                : (hiveService.devices.length == 0)
-                    ? NoDataScreen()
-                    : DataScreen(),
+            body: (!myHiveService.isInitialized)
+                ? const Scaffold(
+                    body: Center(child: CircularProgressIndicator()))
+                : (myHiveService.devices.isEmpty)
+                    ? const NoDataScreen()
+                    : const DataScreen(),
             floatingActionButton: MyFloatingActionButton(
-                onpressed: () => openBottomSheet(context, AddDevice())));
+                onpressed: () => openBottomSheet(context, AddDeviceForm())));
       },
     );
   }
