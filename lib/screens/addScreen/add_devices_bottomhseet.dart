@@ -2,31 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:untitled8/Functions/get_custom_textstyle.dart';
 import 'package:uuid/uuid.dart';
 
-import '../Functions/get_device_icon.dart';
-import '../Functions/show_snackbar.dart';
-import '../data/devices.dart';
-import '../services/hive_service.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/custom_dropdown.dart';
-import '../widgets/custom_switch.dart';
-import '../widgets/custom_textformfield.dart';
-import 'device_reservation.dart';
+import '../../Functions/get_device_icon.dart';
+import '../../Functions/show_snackbar.dart';
+import '../../models/hive_models/devices.dart';
+import '../../services/hive_service.dart';
+import '../../services/reservation_service.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_dropdown.dart';
+import '../../widgets/custom_textformfield.dart';
 
 class AddDeviceForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _name = TextEditingController();
   final TextEditingController _price = TextEditingController();
   final Uuid uuid = const Uuid();
-
   AddDeviceForm({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final myHiveServiceListenIsTrue = Provider.of<HiveService>(context);
-    final myHiveServiceListenIsFalse =
-        Provider.of<HiveService>(context, listen: false);
+    final myHiveService = Provider.of<HiveService>(context);
+    final myReservationService = Provider.of<ReservationService>(context);
 
     return SingleChildScrollView(
       child: Padding(
@@ -44,7 +42,8 @@ class AddDeviceForm extends StatelessWidget {
                   color: Colors.grey,
                   child: Text(
                     'Add Devices',
-                    style: TextStyle(color: Colors.green, fontSize: 20.sp),
+                    style: getTextStyle(
+                        type: FontTypeEnum.headLineLarge, color: Colors.white),
                   ),
                 ),
               ),
@@ -75,21 +74,11 @@ class AddDeviceForm extends StatelessWidget {
                 keyboard: TextInputType.number,
               ),
               CustomDropdown(
-                icon: (myHiveServiceListenIsTrue.type != null)
-                    ? getDeviceIcon(type: myHiveServiceListenIsTrue.type!)
-                    : const Icon(FontAwesomeIcons.desktop, color: Colors.green),
-                value: myHiveServiceListenIsTrue.type,
-                onChanged: (value) =>
-                    myHiveServiceListenIsTrue.dropDownSelectType(value!),
-              ),
-              CustomSwitch(
-                value: myHiveServiceListenIsTrue.isReserved,
-                onChanged: (value) {
-                  myHiveServiceListenIsTrue.reservation(
-                    newValue: value,
-                    isNewDevice: true,
-                  );
-                },
+                icon: (myHiveService.type != null)
+                    ? getDeviceIcon(type: myHiveService.type!)
+                    : const Icon(FontAwesomeIcons.question, color: Colors.purple),
+                value: myHiveService.type,
+                onChanged: (value) => myHiveService.dropDownSelectType(value!),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 30.h),
@@ -99,39 +88,27 @@ class AddDeviceForm extends StatelessWidget {
                     CustomButton(
                       onpressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          myHiveServiceListenIsTrue.addDevice(
+                          myHiveService.addDevice(
                             device: MyDevice(
-                              customerName:
-                                  (myHiveServiceListenIsTrue.isReserved)
-                                      ? myHiveServiceListenIsTrue.customerName
-                                      : "",
-                              selectedTime:
-                                  (myHiveServiceListenIsTrue.isReserved)
-                                      ? myHiveServiceListenIsTrue.dateTime
-                                      : null,
-                              type: myHiveServiceListenIsTrue.type!,
-                              reserved: myHiveServiceListenIsTrue.isReserved,
+                              customerName: null,
+                              startTime:  null,
+                              endTime: null,
+                              type: myHiveService.type!,
+                              reserved: myHiveService.isReserved,
                               name: _name.text,
-                              ID: uuid.v4(),
+                              id: uuid.v4(),
                               price: _price.text,
                             ),
                           );
-                          if (myHiveServiceListenIsFalse.isReserved) {
-                            showDeviceReservationDialog(
-                                isFromHomePage: false,
-                                context: context,
-                                index:
-                                    (myHiveServiceListenIsTrue.devices.length -
-                                        1));
-                          } else {
-                            Navigator.pop(context);
-                          }
+                          Navigator.pop(context);
+
                           showCustomSnackBar(
                             context: context,
                             txt: 'Device added successfully',
                           );
+
                         }
-                        myHiveServiceListenIsTrue.isReserved = false;
+                        myHiveService.isReserved = false;
                       },
                       txt: 'Add Device',
                       color: Colors.green,
@@ -139,8 +116,7 @@ class AddDeviceForm extends StatelessWidget {
                     CustomButton(
                       onpressed: () {
                         Navigator.pop(context);
-                        myHiveServiceListenIsTrue.reservation(
-                            newValue: false, isNewDevice: true);
+                        myHiveService.type=null;
                       },
                       txt: 'Cancel',
                       color: Colors.red,

@@ -9,7 +9,8 @@ void openBottomSheet(BuildContext context, Widget wid) {
       builder: (BuildContext context) {
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
-          child: wid,
+          child: Container(
+              child: wid),
         );
       });
 }

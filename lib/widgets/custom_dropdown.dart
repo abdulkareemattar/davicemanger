@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:untitled8/Functions/get_custom_textstyle.dart';
 
-import '../data/devices.dart';
-import '../data/dropdown_items.dart';
+import '../models/hive_models/device_type_enums.dart';
 
 class CustomDropdown extends StatelessWidget {
-  final Icon ? icon;
+  final Icon? icon;
   final DeviceTypesEnums? value;
   final ValueChanged<DeviceTypesEnums?> onChanged;
 
@@ -22,24 +22,24 @@ class CustomDropdown extends StatelessWidget {
       child: DropdownButtonFormField<DeviceTypesEnums>(
         icon: icon,
         value: value,
-        decoration: InputDecoration(border:  OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.green, width: 3),
-        borderRadius: BorderRadius.circular(8),
-      ),
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
           labelText: 'Select Device Type',
-          labelStyle: const TextStyle(color: Colors.green),
+          labelStyle: getTextStyle(
+              type: FontTypeEnum.headLineSmall, color: Colors.white),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.grey, width: 2),
+            borderSide: const BorderSide(color: Colors.purple, width: 3),
             borderRadius: BorderRadius.circular(8),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.grey, width: 2),
+            borderSide: const BorderSide(color: Colors.purple, width: 3),
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        items: dropdownitems,
+        items: dropDownItems,
         onChanged: onChanged,
-
         validator: (value) {
           return value == null ? "Please select a device type" : null;
         },
@@ -47,3 +47,26 @@ class CustomDropdown extends StatelessWidget {
     );
   }
 }
+
+List<DropdownMenuItem<DeviceTypesEnums>> dropDownItems = [
+  DropdownMenuItem(
+    value: DeviceTypesEnums.PC,
+    child: Text(DeviceTypesEnums.PC.name),
+  ),
+  DropdownMenuItem(
+    value: DeviceTypesEnums.Playstation,
+    child: Text(DeviceTypesEnums.Playstation.name),
+  ),
+  DropdownMenuItem(
+    value: DeviceTypesEnums.Xbox,
+    child: Text(DeviceTypesEnums.Xbox.name),
+  ),
+  DropdownMenuItem(
+    value: DeviceTypesEnums.Laptop,
+    child: Text(DeviceTypesEnums.Laptop.name),
+  ),
+  DropdownMenuItem(
+    value: DeviceTypesEnums.NintendoSwitch,
+    child: Text(DeviceTypesEnums.NintendoSwitch.name),
+  ),
+];

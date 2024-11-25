@@ -7,7 +7,7 @@ final void Function(bool) onChanged;
   @override
   Widget build(BuildContext context) {
     return Switch(
-      activeTrackColor: Colors.amber,
+      activeTrackColor: Colors.purple,
       thumbColor: WidgetStateProperty.resolveWith<Color?>(
               (Set<WidgetState> states) {
             if (states.contains(WidgetState.disabled)) {

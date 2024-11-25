@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled8/Functions/get_custom_textstyle.dart';
 
 class CustomButton extends StatelessWidget {
   const CustomButton({super.key, required this.onpressed, required this.txt, required this.color});
@@ -14,11 +15,11 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
         style: ElevatedButton.styleFrom(
             backgroundColor: color,
-            side: const BorderSide(color: Colors.amber, width: 2)),
+            side: const BorderSide(color: Colors.blueGrey, width: 2)),
         onPressed: onpressed,
         child: Text(
           txt,
-          style: const TextStyle(color: Colors.white),
+          style: getTextStyle(type: FontTypeEnum.customHeadLine, color: Colors.white,size: 14),
         ));
   }
 }

@@ -1,32 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled8/data/devices.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:uuid/uuid.dart';
 
-import '../Functions/get_device_icon.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/custom_dropdown.dart';
-import '../widgets/custom_switch.dart';
-import '../widgets/custom_textformfield.dart';
-import 'edit_reservation.dart';
+import '../../Functions/get_device_icon.dart';
+import '../../models/hive_models/devices.dart';
+import '../../services/reservation_service.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_dropdown.dart';
+import '../../widgets/custom_switch.dart';
+import '../../widgets/custom_textformfield.dart';
+import '../reservationScreen/edit_reservation_dialog.dart';
 
 class EditDevice extends StatelessWidget {
   final uuid = const Uuid();
+
   int index;
 
   EditDevice({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final myHiveServiceListenIsTrue = Provider.of<HiveService>(context);
-    final myHiveServiceListenIsFalse =
-        Provider.of<HiveService>(context, listen: false);
-    final TextEditingController name = TextEditingController(
-        text: myHiveServiceListenIsTrue.devices[index].name);
-    final TextEditingController price = TextEditingController(
-        text: myHiveServiceListenIsTrue.devices[index].price);
+    final myReservationService =
+        Provider.of<ReservationService>(context, listen: false);
+    final myHiveService = Provider.of<HiveService>(context, listen: true);
+    final TextEditingController name =
+        TextEditingController(text: myHiveService.devices[index].name);
+    final TextEditingController price =
+        TextEditingController(text: myHiveService.devices[index].price);
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
@@ -40,7 +42,7 @@ class EditDevice extends StatelessWidget {
               child: Title(
                 color: Colors.grey,
                 child: Text(
-                  'Edit " ${myHiveServiceListenIsTrue.devices[index].name} " device',
+                  'Edit " ${myHiveService.devices[index].name} " device',
                   style: TextStyle(color: Colors.green, fontSize: 20.sp),
                 ),
               ),
@@ -72,14 +74,14 @@ class EditDevice extends StatelessWidget {
               keyboard: TextInputType.number,
             ),
             CustomDropdown(
-              icon: getDeviceIcon(
-                  type: myHiveServiceListenIsTrue.devices[index].type),
-              value: myHiveServiceListenIsTrue.devices[index].type,
+              icon: getDeviceIcon(type: myHiveService.devices[index].type),
+              value: myHiveService.devices[index].type,
               onChanged: (value) {
-                myHiveServiceListenIsTrue.devices[index].type = value!;
+                myHiveService.devices[index].type = value!;
+                myHiveService.saveDetails(index);
               },
             ),
-            (myHiveServiceListenIsFalse.devices[index].reserved)
+            (myHiveService.devices[index].reserved)
                 ? CustomButton(
                     onpressed: () => showEditReservationDialog(
                           context: context,
@@ -90,13 +92,10 @@ class EditDevice extends StatelessWidget {
                     color: Colors.orange)
                 : const SizedBox(),
             CustomSwitch(
-              value: myHiveServiceListenIsTrue.devices[index].reserved,
+              value: myHiveService.devices[index].reserved,
               onChanged: (value) {
-                myHiveServiceListenIsTrue.reservation(
-                  index: index,
-                  isNewDevice: false,
-                  newValue: value,
-                );
+                myReservationService.setReservation(
+                    index: index, newValue: value, context: context);
               },
             ),
             Row(
@@ -107,15 +106,18 @@ class EditDevice extends StatelessWidget {
                   child: CustomButton(
                     txt: 'Update this device',
                     onpressed: () {
-                      myHiveServiceListenIsTrue.updateDevice(
+                      myHiveService.updateDevice(
                         index: index,
                         device: MyDevice(
+                          startTime: myHiveService.devices[index].startTime,
+                          endTime: myHiveService.devices[index].endTime,
+                          customerName:
+                              myHiveService.devices[index].customerName,
                           price: price.text,
-                          type: myHiveServiceListenIsTrue.devices[index].type,
-                          reserved:
-                              myHiveServiceListenIsTrue.devices[index].reserved,
+                          type: myHiveService.devices[index].type,
+                          reserved: myHiveService.devices[index].reserved,
                           name: name.text,
-                          ID: myHiveServiceListenIsTrue.devices[index].ID,
+                          id: myHiveService.devices[index].id,
                         ),
                       );
                       Navigator.pop(context);

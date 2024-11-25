@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
-import 'package:untitled8/screens/add_devices.dart';
+import 'package:untitled8/screens/addScreen/add_devices_bottomhseet.dart';
 
 class NoDataScreen extends StatelessWidget {
   const NoDataScreen({super.key});
@@ -13,38 +13,44 @@ class NoDataScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Lottie.asset('lib/assets/lottie/devices.json',
-              width: 200.w, height: 200.h),
+          Flexible(
+            child: Lottie.asset('lib/assets/lottie/devices.json',
+                width: 200.w, height: 200.h),
+          ),
           SizedBox(height: 20.h),
-          Text(
-            'No Data Available',
-            style: TextStyle(
-              fontSize: 28.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.amber[800],
+          Flexible(
+            child: Text(
+              'No Data Available',
+              style: TextStyle(
+                fontSize: 28.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.amber[800],
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
           SizedBox(height: 10.h),
-          Text(
-            'Start by adding new devices!',
-            style: TextStyle(
-              fontSize: 18.sp,
-              color: Colors.green[600],
+          Flexible(
+            child: Text(
+              'Start by adding new devices!',
+              style: TextStyle(
+                fontSize: 18.sp,
+                color: Colors.purple[600],
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           SizedBox(height: 30.h),
           ElevatedButton(
             onPressed: () {
-              _openBottomSheet(context,AddDeviceForm());
+              _openBottomSheet(context, AddDeviceForm());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber[700],
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               textStyle: TextStyle(fontSize: 16.sp),
             ),
-            child: const Text(
-              'Add New Device',
+            child: const Text('Add New Device',
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -52,6 +58,7 @@ class NoDataScreen extends StatelessWidget {
       ),
     );
   }
+
   void _openBottomSheet(BuildContext context, Widget wid) {
     showModalBottomSheet(
       context: context,

@@ -9,8 +9,7 @@ class MyFloatingActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.amber, Colors.green]),
+      decoration: const BoxDecoration(color: Colors.purple,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(color: Colors.black, offset: Offset(5, 5), blurRadius: 5)
