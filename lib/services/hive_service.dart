@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:time_planner/time_planner.dart';
 
 import '../models/hive_models/device_type_enums.dart';
 import '../models/hive_models/devices.dart';
@@ -16,43 +15,10 @@ class HiveService extends ChangeNotifier {
   DateTime dateTime = DateTime.now();
 
   List<MyDevice> get devices => _box.values.toList();
-
-  Box get box => _box;
-
   List<MyDevice> get reservedDevices =>
       _box.values.where((device) => device.reserved).toList();
 
-  List<TimePlannerTask>? getReservedTasks() {
-    List<TimePlannerTask> tasks = [];
-    for (MyDevice device in reservedDevices) {
-      DateTime from = device.startTime!;
-      DateTime to = device.endTime!;
-      Duration difference = to.difference(from);
-      tasks.add(
-        TimePlannerTask(
-          minutesDuration: 200,
-          dateTime: TimePlannerDateTime(
-            day: DateTime.now().day,
-            hour: DateTime.now().hour,
-            minutes: DateTime.now().minute,
-          ),
-          color: Colors.blue,
-          // لون المهمة
-          onTap: () {
-            // تنفيذ حدث عند الضغط على المهمة
-            print('تم الضغط على المهمة!');
-          },
-          child: Text(
-            device.name,
-            style: TextStyle(color: Colors.white),
-          ),
-          // المسافة من اليسار
-          widthTask: 200.0, // عرض المهمة
-        ),
-      );
-    }
-    return tasks;
-  }
+  Box<MyDevice> get box => _box;
 
   HiveService() {
     init();

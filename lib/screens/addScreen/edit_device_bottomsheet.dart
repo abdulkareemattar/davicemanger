@@ -9,16 +9,15 @@ import '../../models/hive_models/devices.dart';
 import '../../services/reservation_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_dropdown.dart';
-import '../../widgets/custom_switch.dart';
 import '../../widgets/custom_textformfield.dart';
-import '../reservationScreen/edit_reservation_dialog.dart';
 
 class EditDevice extends StatelessWidget {
   final uuid = const Uuid();
 
-  int index;
+  final int deviceIndex;
 
-  EditDevice({super.key, required this.index});
+  const EditDevice(
+      {super.key, required this.deviceIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +25,9 @@ class EditDevice extends StatelessWidget {
         Provider.of<ReservationService>(context, listen: false);
     final myHiveService = Provider.of<HiveService>(context, listen: true);
     final TextEditingController name =
-        TextEditingController(text: myHiveService.devices[index].name);
+        TextEditingController(text: myHiveService.devices[deviceIndex].name);
     final TextEditingController price =
-        TextEditingController(text: myHiveService.devices[index].price);
+        TextEditingController(text: myHiveService.devices[deviceIndex].price);
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
@@ -42,7 +41,7 @@ class EditDevice extends StatelessWidget {
               child: Title(
                 color: Colors.grey,
                 child: Text(
-                  'Edit " ${myHiveService.devices[index].name} " device',
+                  'Edit " ${myHiveService.devices[deviceIndex].name} " device',
                   style: TextStyle(color: Colors.green, fontSize: 20.sp),
                 ),
               ),
@@ -74,30 +73,27 @@ class EditDevice extends StatelessWidget {
               keyboard: TextInputType.number,
             ),
             CustomDropdown(
-              icon: getDeviceIcon(type: myHiveService.devices[index].type),
-              value: myHiveService.devices[index].type,
+              icon:
+                  getDeviceIcon(type: myHiveService.devices[deviceIndex].type),
+              value: myHiveService.devices[deviceIndex].type,
               onChanged: (value) {
-                myHiveService.devices[index].type = value!;
-                myHiveService.saveDetails(index);
+                myHiveService.devices[deviceIndex].type= value!;
+                myHiveService.saveDetails(deviceIndex);
               },
             ),
-            (myHiveService.devices[index].reserved)
+            (myHiveService.devices[deviceIndex].reserved)
                 ? CustomButton(
-                    onpressed: () => showEditReservationDialog(
-                          context: context,
-                          index: index,
-                          notDoublePop: true,
-                        ),
+                    onpressed: () =>{},
                     txt: 'Edit the reservation time',
                     color: Colors.orange)
                 : const SizedBox(),
-            CustomSwitch(
-              value: myHiveService.devices[index].reserved,
+          /*  CustomSwitch(
+              value: myHiveService.devices[deviceIndex].reserved,
               onChanged: (value) {
                 myReservationService.setReservation(
-                    index: index, newValue: value, context: context);
+                    index: deviceIndex, newValue: value, context: context);
               },
-            ),
+            ),*/
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -107,19 +103,16 @@ class EditDevice extends StatelessWidget {
                     txt: 'Update this device',
                     onpressed: () {
                       myHiveService.updateDevice(
-                        index: index,
-                        device: MyDevice(
-                          startTime: myHiveService.devices[index].startTime,
-                          endTime: myHiveService.devices[index].endTime,
-                          customerName:
-                              myHiveService.devices[index].customerName,
-                          price: price.text,
-                          type: myHiveService.devices[index].type,
-                          reserved: myHiveService.devices[index].reserved,
-                          name: name.text,
-                          id: myHiveService.devices[index].id,
-                        ),
-                      );
+                          index: deviceIndex,
+                          device: MyDevice(
+                            // تمرير القائمة المُحدثة
+                            price: price.text,
+                            type: myHiveService.devices[deviceIndex].type,
+                            reserved:
+                                myHiveService.devices[deviceIndex].reserved,
+                            name: name.text,
+                            id: myHiveService.devices[deviceIndex].id,
+                          ));
                       Navigator.pop(context);
                     },
                     color: Colors.green,

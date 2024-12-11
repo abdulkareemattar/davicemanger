@@ -8,21 +8,25 @@ import 'package:untitled8/services/reservation_service.dart';
 
 import 'models/hive_models/device_type_enums.dart';
 import 'models/hive_models/devices.dart';
+import 'models/hive_models/reservation_model.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
-  // تسجيل TypeAdapters لمرة واحدة
+  // Register TypeAdapters once
   if (!Hive.isAdapterRegistered(MyDeviceAdapter().typeId)) {
     Hive.registerAdapter(MyDeviceAdapter());
   }
   if (!Hive.isAdapterRegistered(DeviceTypesEnumsAdapter().typeId)) {
     Hive.registerAdapter(DeviceTypesEnumsAdapter());
   }
+  if (!Hive.isAdapterRegistered(ReservationAdapter().typeId)) {
+    Hive.registerAdapter(ReservationAdapter());
+  }
 
-  // تهيئة HiveService
+  // Initialize HiveService
   final hiveService = HiveService();
   await hiveService.init();
 

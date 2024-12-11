@@ -89,10 +89,8 @@ class AddDeviceForm extends StatelessWidget {
                       onpressed: () async {
                         if (_formKey.currentState!.validate()) {
                           myHiveService.addDevice(
-                            device: MyDevice(
+                            device: MyDevice(reservations: [],
                               customerName: null,
-                              startTime:  null,
-                              endTime: null,
                               type: myHiveService.type!,
                               reserved: myHiveService.isReserved,
                               name: _name.text,

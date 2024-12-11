@@ -42,7 +42,7 @@ final Widget child;
     onPressed: (context) => openBottomSheet(
     context,
     EditDevice(
-    index: index,
+    deviceIndex: index,
     )),
     backgroundColor: Colors.green,
     foregroundColor: Colors.white,

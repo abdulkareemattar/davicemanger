@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:untitled8/Functions/show_snackbar.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/widgets/custom_textformfield.dart';
 
 import '../../Functions/time&date_picker.dart';
+import '../../models/hive_models/reservation_model.dart';
 import '../../services/reservation_service.dart';
 import '../../widgets/custom_confirmation_dialog.dart';
 import '../../widgets/custom_datetime_picker_formfield.dart';
 
 class EditReservationDialog extends StatelessWidget {
-  final int index;
+  final int deviceIndex;
+  final int reservationIndex;
+
   final bool notDoublePop;
 
   const EditReservationDialog({
     super.key,
-    required this.index,
+    required this.deviceIndex,
     required this.notDoublePop,
+    required this.reservationIndex,
   });
 
   @override
@@ -24,28 +29,30 @@ class EditReservationDialog extends StatelessWidget {
     final myHiveService = Provider.of<HiveService>(context, listen: true);
     final myReservationService =
         Provider.of<ReservationService>(context, listen: true);
-    DateTime? startTime = myHiveService.devices[index].startTime;
-    DateTime? endTime = myHiveService.devices[index].endTime;
+    DateTime? startTime = myHiveService
+        .devices[deviceIndex].reservations![reservationIndex].startTime;
+    DateTime? endTime = myHiveService
+        .devices[deviceIndex].reservations![reservationIndex].endTime;
     TextEditingController nameController = TextEditingController(
-      text: myHiveService.devices[index].customerName ?? '',
+      text: myHiveService.devices[deviceIndex].customerName ?? '',
     );
 
     return AlertDialog(
       title: Text(
-          'Edit reservation for ${myHiveService.devices[index].name} device'),
+          'Edit reservation for ${myHiveService.devices[deviceIndex].name} device'),
       content: _buildDialogContent(
           context: context,
           nameController: nameController,
           startTime: startTime,
           endTime: endTime,
-          index: index,
+          index: deviceIndex,
           myHiveService: myHiveService),
       actions: _buildDialogActions(
           context: context,
           nameController: nameController,
           startTime: startTime,
           endTime: endTime,
-          index: index,
+          deviceIndex: deviceIndex,
           myReservationService: myReservationService),
     );
   }
@@ -76,7 +83,8 @@ class EditReservationDialog extends StatelessWidget {
                   ? "Please select time for start the Reservation"
                   : null,
               initialValue: Provider.of<HiveService>(context, listen: false)
-                  .devices[index]
+                  .devices[deviceIndex]
+                  .reservations![reservationIndex]
                   .startTime,
               txt:
                   'Enter The (date & time) that you will reserve this device at :',
@@ -92,9 +100,10 @@ class EditReservationDialog extends StatelessWidget {
                   : null,
               initialValue: Provider.of<HiveService>(context, listen: false)
                   .devices[index]
-                  .startTime,
+                  .reservations![reservationIndex]
+                  .endTime,
               txt:
-                  'Enter The (date & time) that you will reserve this device at :',
+                  'Enter The (date & time) that you will end reserve this device at :',
               label: 'End Date & Time',
               onShowPicker: (context, current) async {
                 return startTime =
@@ -112,7 +121,7 @@ class EditReservationDialog extends StatelessWidget {
       required TextEditingController nameController,
       DateTime? startTime,
       DateTime? endTime,
-      required int index,
+      required int deviceIndex,
       required ReservationService myReservationService}) {
     return [
       SizedBox(
@@ -123,14 +132,17 @@ class EditReservationDialog extends StatelessWidget {
             TextButton(
               onPressed: () {
                 if (nameController.text.isNotEmpty) {
-                  print(
-                      "Start Reservation: index=$index, startTime=$startTime, endTime=$endTime, name=${nameController.text}");
+                  showCustomSnackBar(
+                      context: context,
+                      txt:
+                          "Start Reservation: device name : ${deviceIndex}, startTime=$startTime, endTime=$endTime, name=${nameController.text}");
                   myReservationService.startReservation(
                     context: context,
-                    index: index,
-                    start: startTime!,
-                    end: endTime!,
-                    customerName: nameController.text,
+                    deviceIndex: deviceIndex,
+                    reservation: Reservation(
+                        startTime: startTime!,
+                        endTime: endTime!,
+                        customerName: nameController.text),
                   );
                   Navigator.pop(context);
                 }
@@ -141,7 +153,10 @@ class EditReservationDialog extends StatelessWidget {
             TextButton(
               onPressed: () {
                 showCancellationConfirmationDialog(
-                    context, myReservationService, index);
+                    context: context,
+                    myReservationService: myReservationService,
+                    deviceIndex: deviceIndex,
+                    reservationIndex: reservationIndex);
               },
               child: const Text('Cancel Reservation',
                   style: TextStyle(color: Colors.red)),
@@ -161,14 +176,19 @@ class EditReservationDialog extends StatelessWidget {
 // Usage function
 void showEditReservationDialog({
   required BuildContext context,
-  required int index,
+  required int deviceIndex,
+  required int reservationIndex,
   required bool notDoublePop,
 }) {
   showDialog(
     barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
-      return EditReservationDialog(index: index, notDoublePop: notDoublePop);
+      return EditReservationDialog(
+        deviceIndex: deviceIndex,
+        reservationIndex: reservationIndex,
+        notDoublePop: notDoublePop,
+      );
     },
   );
 }

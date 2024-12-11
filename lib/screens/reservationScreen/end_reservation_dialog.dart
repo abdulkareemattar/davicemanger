@@ -1,95 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-import 'package:untitled8/models/hive_models/devices.dart';
+import 'package:untitled8/models/hive_models/devices.dart'; // Your Device model
 
-import '../../Functions/time&date_picker.dart';
-import '../../services/reservation_service.dart';
-import '../../widgets/customCounter.dart';
-import '../../widgets/custom_datetime_picker_formfield.dart';
-import '../../widgets/custom_textformfield.dart';
 
-void showDialogEndReservation(
-    {required BuildContext context,
-    required int index,
-    required MyDevice myDevice}) {
-  TextEditingController nameController =
-      TextEditingController(text: (myDevice.customerName));
-  final myReservationService =
-      Provider.of<ReservationService>(context, listen: false);
-
+void showDialogEndReservation({
+  required BuildContext context,
+  required int deviceIndex,
+  required int reservationIndex,
+  required MyDevice myDevice,
+}) {
+  final reservation = myDevice.reservations![reservationIndex];
 
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('Reservation ${myDevice.name} device'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('You want to end the reservation for this device ?'),
-          CustomTextFormField(
-            onChanged: (value) {
-              myDevice.customerName = value;
-            },
-            txt: "Enter the customer name :",
-            controller: nameController,
-            label: 'Customer Name',
-            keyboard: TextInputType.text,
-          ),
-          CustomBasicDateTimeField(
-            txt:
-                'Enter The (date & time) that you will start reserve this device at :',
-            label: 'Start Date & Time',
-            onShowPicker: (context, current) async {
-              return (myDevice.startTime == null)
-                  ? await getTime(context: context, currentValue: current)
-                  : myDevice.startTime;
-            },
-            initialValue: myDevice.startTime,
-          ),
-          CustomBasicDateTimeField(
-            txt:
-                'Enter The (date & time) that you will end reserve this device at :',
-            label: 'End Date & Time',
-            onShowPicker: (context, current) async {
-              return (myDevice.endTime == null)
-                  ? await getTime(context: context, currentValue: current)
-                  : myDevice.endTime;
-            },
-            initialValue: myDevice.endTime,
-          ),
-          SizedBox(height: 20.h),
-         /* Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: CustomCounter(
-              index: index,
-              colonColor: Colors.orange,
-              enableDescriptions: true,
+      title: Text('Reservation Details for ${myDevice.name}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Are you sure you want to end this reservation?'),
+            Wrap( // Use a Wrap to arrange Chips horizontally
+              spacing: 8.0, // Spacing between Chips
+              children: [
+                _buildChip('Customer', reservation.customerName!),
+                _buildChip('Start', reservation.startTime.toIso8601String()),
+                _buildChip('End', reservation.endTime.toIso8601String()),
+              ],
             ),
-          ),*/
-        ],
+            SizedBox(height: 20.h),
+          ],
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () {
-            myReservationService.cancelReservation(index);
+            // Call your cancellation function here, passing deviceIndex and reservationIndex
+            //Example (replace with your actual function call)
+            // myReservationService.cancelReservation(deviceIndex: deviceIndex, reservationIndex: reservationIndex);
             Navigator.pop(context);
           },
-          child: const Text(
-            'End the reservation',
-            style: TextStyle(color: Colors.orange),
-          ),
+          child: const Text('End Reservation', style: TextStyle(color: Colors.orange)),
         ),
         TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Colors.grey),
-          ),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
       ],
+    ),
+  );
+}
+
+Widget _buildChip(String label, String value) {
+  return Chip(
+    label: Text('$label: $value'),
+    avatar: const CircleAvatar(
+      backgroundColor: Colors.grey,
+      child: Icon(Icons.info_outline, size: 16), //Changed Icon
     ),
   );
 }

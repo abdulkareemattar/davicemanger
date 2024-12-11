@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:untitled8/Functions/show_snackbar.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/widgets/custom_textformfield.dart';
 
+import '../../Functions/check_date_conflects.dart';
 import '../../Functions/time&date_picker.dart';
+import '../../models/hive_models/reservation_model.dart';
 import '../../services/reservation_service.dart';
 import '../../widgets/custom_datetime_picker_formfield.dart';
 
-class StartReservationDialog extends StatelessWidget {
-  final int index;
-  final bool notDoublePop;
+class AddReservationDialog extends StatelessWidget {
+  final int deviceIndex;
+  bool? notDoublePop = true;
 
-  const StartReservationDialog({
+  AddReservationDialog({
     super.key,
-    required this.index,
-    required this.notDoublePop,
+    required this.deviceIndex,
+    this.notDoublePop,
   });
 
   @override
@@ -29,7 +32,7 @@ class StartReservationDialog extends StatelessWidget {
 
     return AlertDialog(
       title: Text(
-          'Start reservation for ${myHiveService.devices[index].name} device'),
+          'Start reservation for ${myHiveService.devices[deviceIndex].name} device'),
       content: Padding(
         padding: EdgeInsets.only(top: 20.0.h),
         child: Form(
@@ -38,8 +41,8 @@ class StartReservationDialog extends StatelessWidget {
             children: [
               CustomTextFormField(
                 validate: (value) =>
-                    value.isEmpty ? "Please Enter Customer's username" : null,
-                txt: "Enter the customer name :",
+                    value.isEmpty ? "Please Enter Customer's Username" : null,
+                txt: "Enter the Customer Name :",
                 controller: nameController,
                 label: 'Customer Name',
                 keyboard: TextInputType.text,
@@ -80,17 +83,25 @@ class StartReservationDialog extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () {
-                  if (nameController.text.isNotEmpty ) {
-
-                      print("Start Reservation: index=$index, startTime=$startTime,endTime=$endTime, name=${nameController.text}");
-                      myReservationService.startReservation(
+                  if ((nameController.text.isNotEmpty) &&
+                      (!checkIfDateConflict(
+                          context: context,
+                          deviceIndex: deviceIndex,
+                          endTime: endTime!,
+                          startTime: startTime!))) {
+                    showCustomSnackBar(
                         context: context,
-                        index: index,
-                        start: startTime!,
-                        end: endTime!,
-                        customerName: nameController.text,
-                      );
-                      Navigator.pop(context);
+                        txt:
+                            "Start Reservation: device name :${myHiveService.devices[deviceIndex].name}, startTime=$startTime,endTime=$endTime, Customer Name=${nameController.text}");
+                    myReservationService.startReservation(
+                      context: context,
+                      deviceIndex: deviceIndex,
+                      reservation: Reservation(
+                          startTime: startTime!,
+                          endTime: endTime!,
+                          customerName: nameController.text),
+                    );
+                    Navigator.pop(context);
                   }
                 },
                 child: const Text('Start Reservation',
@@ -98,7 +109,6 @@ class StartReservationDialog extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => {
-                  myReservationService.cancelReservation(index),
                   Navigator.pop(context)
                 },
                 // Close dialog without canceling reservation
@@ -114,16 +124,19 @@ class StartReservationDialog extends StatelessWidget {
 }
 
 // Usage function
-void showStartReservationDialog({
+void showAddReservationDialog({
   required BuildContext context,
-  required int index,
-  required bool notDoublePop,
+  required int deviceIndex,
+  bool? notDoublePop = true,
 }) {
   showDialog(
     barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
-      return StartReservationDialog(index: index, notDoublePop: notDoublePop);
+      return AddReservationDialog(
+        deviceIndex: deviceIndex,
+        notDoublePop: notDoublePop,
+      );
     },
   );
 }

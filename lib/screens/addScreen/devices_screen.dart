@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled8/Functions/get_custom_textstyle.dart';
+import 'package:untitled8/screens/addScreen/showReservationsDialog.dart';
 import 'package:untitled8/widgets/custom_button.dart';
 import 'package:untitled8/widgets/custom_gridview.dart';
 import 'package:untitled8/widgets/custom_slidable.dart';
 
 import '../../Functions/get_device_icon.dart';
 import '../../services/hive_service.dart';
-import '../../services/reservation_service.dart';
 import '../../widgets/custom_card.dart';
 import '../noData_screen.dart';
-import '../reservationScreen/end_reservation_dialog.dart';
 import '../reservationScreen/start_reservation_dialog.dart';
 
 class AddDevicesScreen extends StatelessWidget {
@@ -20,8 +19,6 @@ class AddDevicesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final myHiveService = Provider.of<HiveService>(context, listen: true);
-    final myReservationService =
-        Provider.of<ReservationService>(context, listen: true);
 
     return myHiveService.devices.isEmpty
         ? const NoDataScreen()
@@ -64,36 +61,35 @@ class AddDevicesScreen extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
                 child: CustomGridview(
                   itemCount: myHiveService.devices.length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (context, deviceIndex) {
                     return CustomSlidable(
-                      keyY: Key(myHiveService.devices[index].id),
-                      index: index,
+                      keyY: Key(myHiveService.devices[deviceIndex].id),
+                      index: deviceIndex,
                       child: CustomCard(
-                        onTap: () => (!myHiveService.devices[index].reserved)
-                            ? showStartReservationDialog(
-                                context: context,
-                                index: index,
-                                notDoublePop: true)
-                            : showDialogEndReservation(
-                                context: context,
-                                index: index,
-                                myDevice: myHiveService.devices[index]),
-                        colorOfCard: getDeviceIcon(
-                                type: myHiveService.devices[index].type)
-                            .color,
-                        device: myHiveService.devices[index],
-                        id: myHiveService.devices[index].id,
+                        iconOfTrailing: const Icon(
+                          Icons.add,
+                          color: Colors.black,
+                        ),
                         onTapOnTrailing: () {
-                          myReservationService.setReservation(
-                              context: context,
-                              index: index,
-                              newValue: !myHiveService.devices[index].reserved);
+                          showAddReservationDialog(
+                            context: context,
+                            deviceIndex: deviceIndex,
+                          );
                         },
-                        isReserved: myHiveService.devices[index].reserved,
-                        index: index,
+                        onTap: () => showDeviceReservationsDialog(hive: myHiveService,
+                            deviceIndex: deviceIndex,
+                            context: context,
+                            notDoublePop: true),
+                        colorOfCard: getDeviceIcon(
+                                type: myHiveService.devices[deviceIndex].type)
+                            .color,
+                        device: myHiveService.devices[deviceIndex],
+                        id: myHiveService.devices[deviceIndex].id,
+                        isReserved: myHiveService.devices[deviceIndex].reserved,
+                        index: deviceIndex,
                         leading: getDeviceIcon(
-                            type: myHiveService.devices[index].type),
-                        title: Text(myHiveService.devices[index].name,
+                            type: myHiveService.devices[deviceIndex].type),
+                        title: Text(myHiveService.devices[deviceIndex].name,
                             overflow: TextOverflow.visible,
                             maxLines: 3,
                             softWrap: true,
@@ -101,12 +97,13 @@ class AddDevicesScreen extends StatelessWidget {
                                 size: 12.sp,
                                 type: FontTypeEnum.customHeadLine,
                                 color: getDeviceIcon(
-                                        type: myHiveService.devices[index].type)
+                                        type: myHiveService
+                                            .devices[deviceIndex].type)
                                     .color)),
                         subtitle: Column(
                           children: [
                             Text(
-                              '${myHiveService.devices[index].price} \$ ',
+                              '${myHiveService.devices[deviceIndex].price} \$ ',
                               style: getTextStyle(
                                   type: FontTypeEnum.headLineSmall,
                                   color: Colors.green),
@@ -121,7 +118,7 @@ class AddDevicesScreen extends StatelessWidget {
                           ],
                         ),
                         colorOfReservedCircle:
-                            (!myHiveService.devices[index].reserved)
+                            (!myHiveService.devices[deviceIndex].reserved)
                                 ? Colors.red
                                 : Colors.green,
                         shape: RoundedRectangleBorder(

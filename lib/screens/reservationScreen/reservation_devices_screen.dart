@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled8/screens/noData_screen.dart';
+import 'package:untitled8/screens/reservationScreen/start_reservation_dialog.dart';
 
 import '../../Functions/get_device_icon.dart';
 import '../../services/hive_service.dart';
@@ -10,8 +11,7 @@ import '../../widgets/custom_button.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_gridview.dart';
 import '../../widgets/custom_slidable.dart';
-import 'edit_reservation_dialog.dart';
-import 'end_reservation_dialog.dart';
+import '../addScreen/showReservationsDialog.dart';
 
 class ReservationDevices extends StatelessWidget {
   const ReservationDevices({super.key});
@@ -20,7 +20,6 @@ class ReservationDevices extends StatelessWidget {
   Widget build(BuildContext context) {
     final myHiveService = Provider.of<HiveService>(context, listen: false);
     final myReservationService = Provider.of<ReservationService>(context);
-
     return myHiveService.reservedDevices.isEmpty
         ? const NoDataScreen()
         : Column(children: [
@@ -62,38 +61,33 @@ class ReservationDevices extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
                 child: CustomGridview(
                   itemCount: myHiveService.reservedDevices.length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (context, deviceIndex) {
                     return CustomSlidable(
-                      keyY: Key(myHiveService.reservedDevices[index].id),
-                      index: index,
+                      keyY: Key(myHiveService.reservedDevices[deviceIndex].id),
+                      index: deviceIndex,
                       child: CustomCard(
-                        onTap: () => showDialogEndReservation(
-                                context: context,
-                                index: index,
-                                myDevice: myHiveService.devices[index]),
-                        device: myHiveService.reservedDevices[index],
-                        id: myHiveService.reservedDevices[index].id,
+                        iconOfTrailing: Icon(Icons.power_settings_new_sharp,
+                            size: 16.sp, color: Colors.black),
+                        device: myHiveService.reservedDevices[deviceIndex],
+                        id: myHiveService.reservedDevices[deviceIndex].id,
                         onTapOnTrailing: () {
-                          myReservationService.setReservation(
-                              context: context,
-                              index: index,
-                              newValue: !myHiveService
-                                  .reservedDevices[index].reserved);
-                          if (myHiveService.reservedDevices[index].reserved) {
-                            showEditReservationDialog(
-                              context: context,
-                              index: index,
-                              notDoublePop: true,
-                            );
-                          }
+                          showAddReservationDialog(
+                            context: context,
+                            deviceIndex: deviceIndex,
+                          );
                         },
+                        onTap: () => showDeviceReservationsDialog(hive: myHiveService,
+                            deviceIndex: deviceIndex,
+                            context: context,
+                            notDoublePop: true),
                         isReserved:
-                            myHiveService.reservedDevices[index].reserved,
-                        index: index,
+                            myHiveService.reservedDevices[deviceIndex].reserved,
+                        index: deviceIndex,
                         leading: getDeviceIcon(
-                            type: myHiveService.reservedDevices[index].type),
+                            type: myHiveService
+                                .reservedDevices[deviceIndex].type),
                         title: Text(
-                          myHiveService.reservedDevices[index].name,
+                          myHiveService.reservedDevices[deviceIndex].name,
                           style: TextStyle(
                               shadows: const [
                                 BoxShadow(
@@ -105,13 +99,13 @@ class ReservationDevices extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               color: getDeviceIcon(
                                       type: myHiveService
-                                          .reservedDevices[index].type)
+                                          .reservedDevices[deviceIndex].type)
                                   .color),
                         ),
                         subtitle: Column(
                           children: [
                             Text(
-                              '${myHiveService.reservedDevices[index].price} \$ ',
+                              '${myHiveService.reservedDevices[deviceIndex].price} \$ ',
                               style: TextStyle(
                                   shadows: const [
                                     BoxShadow(
@@ -138,15 +132,15 @@ class ReservationDevices extends StatelessWidget {
                             ),
                           ],
                         ),
-                        colorOfReservedCircle:
-                            (!myHiveService.reservedDevices[index].reserved)
-                                ? Colors.red
-                                : Colors.green,
+                        colorOfReservedCircle: (!myHiveService
+                                .reservedDevices[deviceIndex].reserved)
+                            ? Colors.red
+                            : Colors.green,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(double.infinity),
                         ),
                         colorOfCard: getDeviceIcon(
-                                type: myHiveService.devices[index].type)
+                                type: myHiveService.devices[deviceIndex].type)
                             .color!,
                       ),
                     );

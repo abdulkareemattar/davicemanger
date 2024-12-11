@@ -16,7 +16,7 @@ class CustomCard extends StatelessWidget {
     required this.id,
     required RoundedRectangleBorder shape,
     required this.isReserved,
-    required this.colorOfCard,
+    required this.colorOfCard, required this.iconOfTrailing,
   });
 
   final MyDevice device;
@@ -30,6 +30,7 @@ class CustomCard extends StatelessWidget {
   final int index;
   final bool isReserved;
   final String id;
+  final Icon iconOfTrailing;
 
   @override
   Widget build(BuildContext context) {
@@ -92,9 +93,7 @@ class CustomCard extends StatelessWidget {
                           border: Border.all(color: Colors.black)),
                       child: CircleAvatar(
                         backgroundColor: colorOfReservedCircle,
-                        child: Icon(Icons.power_settings_new_sharp,
-                            size: 16.sp,
-                            color: Colors.black), // أيقونة في الزاوية
+                        child: iconOfTrailing // أيقونة في الزاوية
                       ),
                     ),
                   ),

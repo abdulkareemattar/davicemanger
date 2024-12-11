@@ -4,67 +4,70 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:untitled8/services/hive_service.dart';
 
-import '../screens/reservationScreen/start_reservation_dialog.dart';
+import '../models/hive_models/devices.dart';
+import '../models/hive_models/reservation_model.dart';
 
 class ReservationService extends ChangeNotifier {
-  final HiveService hiveService;
-  late final Box _box;
+  final HiveService myHiveService;
+  late final Box<MyDevice> _box;
   final Map<int, Duration> _durations = {};
   final Map<int, Timer> _timers = {};
 
   Map<int, Duration> get durations => _durations;
 
-  ReservationService(this.hiveService) {
-    _box = hiveService.box;
+  ReservationService(this.myHiveService) {
+    _box = myHiveService.box;
   }
 
-  /// Sets the reservation state for a device and shows the reservation dialog if needed.
-  Future<void> setReservation({
-    required int index,
-    required bool newValue,
-    required BuildContext context,
-  }) async {
-    if (newValue) {
-      showStartReservationDialog(
-          context: context, index: index, notDoublePop: true);
-    }
-    await _updateDeviceReservation(index, newValue);
-  }
 
   /// Starts the reservation process for a device.
   Future<void> startReservation({
-    required int index,
     required BuildContext context,
-    required DateTime start,
-    required DateTime end,
-    required String customerName,
+    required int deviceIndex,
+    required Reservation reservation,
   }) async {
-    hiveService.devices[index]
-      ..startTime = start
-      ..endTime = end
-      ..customerName = customerName;
-    await _updateDeviceReservation(index, true);
-
-    await _box.putAt(index, hiveService.devices[index]);
+    final device=myHiveService.devices[deviceIndex];
+    // Add the new reservation
+    device.reservations!.add(reservation);
+    device.reserved = true;
+    // Update the device in the box
+    await _box.putAt(deviceIndex,device);
     notifyListeners();
   }
 
-  /// Cancels the reservation for a device.
-  Future<void> cancelReservation(int index) async {
-    hiveService.devices[index].startTime = null;
-    hiveService.devices[index].endTime = null;
-    hiveService.devices[index].customerName = null;
-    await _updateDeviceReservation(index, false);
+  /// Cancels the reservation.
+  Future<void> cancelReservation({
+    required int deviceIndex,
+    required int reservationIndex, // Changed to reservationIndex
+  }) async {
+    final device = myHiveService.devices[deviceIndex];
+    device.reservations!.removeAt(reservationIndex);
+    device.reserved = device.reservations!.isNotEmpty;
+    await _box.putAt(deviceIndex, device);
+    notifyListeners();
+  }
+
+  Future<void> checkReservationForOneDevice(int deviceIndex) async {
+    final myDevice = myHiveService.devices[deviceIndex];
+    for (int reserveIndex = 0;
+        reserveIndex < myDevice.reservations!.length;
+        reserveIndex++) {
+      final Duration difference = myDevice.reservations![reserveIndex].endTime
+          .difference(DateTime.now());
+      if (difference.inSeconds <= 0) {
+        cancelReservation(
+            deviceIndex: deviceIndex, reservationIndex: reserveIndex);
+      }
+    }
   }
 
   Future<void> checkReservationForAllDevices() async {
-    for (int i = 0; i < hiveService.reservedDevices.length; i++) {
-      var device = hiveService.devices[i];
-      if (device.startTime != null && device.endTime != null) {
-        final difference = device.endTime!.difference(device.startTime!);
-        if (difference.inSeconds <= 0) {
-          await cancelReservation(i);
-        }
+    for (int deviceIndex = 0;
+        deviceIndex < myHiveService.devices.length;
+        deviceIndex++) {
+      final myDevice = myHiveService.devices[deviceIndex];
+      if (myDevice.reserved) {
+        await checkReservationForOneDevice(deviceIndex);
       }
     }
     notifyListeners();
@@ -72,27 +75,32 @@ class ReservationService extends ChangeNotifier {
 
   /// Updates the reservation state of the device at the given index.
   Future<void> _updateDeviceReservation(int index, bool reserved) async {
-    hiveService.devices[index].reserved = reserved;
-    await _box.putAt(index, hiveService.devices[index]);
+    myHiveService.devices[index].reserved = reserved;
+    await _box.putAt(index, myHiveService.devices[index]);
     notifyListeners();
   }
 
   /// Starts a countdown timer until the reservation time.
-  void startCountdown({required int index}) {
-    _durations[index] =
-        hiveService.devices[index].endTime!.isBefore(DateTime.now())
-            ? Duration.zero
-            : hiveService.devices[index].endTime!.difference(DateTime.now());
+  void startCountdown(
+      {required int deviceIndex, required int reservationIndex}) {
+    _durations[deviceIndex] = myHiveService
+            .devices[deviceIndex].reservations!.last.endTime
+            .isBefore(DateTime.now())
+        ? Duration.zero
+        : myHiveService.devices[deviceIndex].reservations!.last.endTime
+            .difference(DateTime.now());
 
-    _timers[index]?.cancel();
+    _timers[deviceIndex]?.cancel();
 
-    _timers[index] = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_durations[index]!.inSeconds > 0) {
-        _durations[index] = _durations[index]! - const Duration(seconds: 1);
+    _timers[deviceIndex] = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_durations[deviceIndex]!.inSeconds > 0) {
+        _durations[deviceIndex] =
+            _durations[deviceIndex]! - const Duration(seconds: 1);
         notifyListeners(); // Notify listeners to update UI
       } else {
         timer.cancel();
-        cancelReservation(index); // Cancel reservation when time is up
+        cancelReservation(
+            reservationIndex: reservationIndex, deviceIndex: deviceIndex);
       }
     });
   }

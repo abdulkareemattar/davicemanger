@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../services/reservation_service.dart';
 
-void showCancellationConfirmationDialog(BuildContext context,
-    ReservationService myReservationService, int index) {
+void showCancellationConfirmationDialog({required BuildContext context,
+    required ReservationService myReservationService, required int deviceIndex, required int reservationIndex}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -20,7 +20,7 @@ void showCancellationConfirmationDialog(BuildContext context,
           TextButton(
             onPressed: () {
               myReservationService
-                  .cancelReservation(index); // Call the cancellation method
+                  .cancelReservation(deviceIndex: deviceIndex, reservationIndex: reservationIndex); // Call the cancellation method
               Navigator.pop(context); // Close confirmation dialog
               Navigator.pop(context); // Close original dialog
             },
