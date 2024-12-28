@@ -3,22 +3,27 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled8/Functions/get_custom_textstyle.dart';
 import 'package:untitled8/screens/addScreen/showReservationsDialog.dart';
-import 'package:untitled8/widgets/custom_button.dart';
+import 'package:untitled8/services/reservation_service.dart';
 import 'package:untitled8/widgets/custom_gridview.dart';
 import 'package:untitled8/widgets/custom_slidable.dart';
 
 import '../../Functions/get_device_icon.dart';
 import '../../services/hive_service.dart';
+import '../../widgets/custom_bottomsheet.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/custom_delete_dialog.dart';
 import '../noData_screen.dart';
 import '../reservationScreen/start_reservation_dialog.dart';
+import 'edit_device_bottomsheet.dart';
 
-class AddDevicesScreen extends StatelessWidget {
-  const AddDevicesScreen({super.key});
+class MyDevicesScreen extends StatelessWidget {
+  const MyDevicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final myHiveService = Provider.of<HiveService>(context, listen: true);
+    final myReservationService =
+        Provider.of<ReservationService>(context, listen: true);
 
     return myHiveService.devices.isEmpty
         ? const NoDataScreen()
@@ -34,24 +39,46 @@ class AddDevicesScreen extends StatelessWidget {
                 width: double.infinity,
                 child: Row(
                   children: [
-                    Text(
-                      'My devices',
-                      style: TextStyle(
-                          shadows: const [
-                            BoxShadow(
-                                color: Colors.black,
-                                blurRadius: 1,
-                                offset: Offset(1, 1))
-                          ],
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber[700]),
+                    Chip(
+                      label: Text(
+                        'My devices',
+                        style: TextStyle(
+                            shadows: const [
+                              BoxShadow(
+                                  color: Colors.black,
+                                  blurRadius: 1,
+                                  offset: Offset(1, 1))
+                            ],
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber[700]),
+                      ),
                     ),
                     const Spacer(),
-                    CustomButton(
-                        onpressed: () => myHiveService.deleteAllDevices(),
-                        txt: 'Clear All',
-                        color: Colors.red)
+                    ActionChip(disabledColor: Colors.red,
+                      label: Text(
+                        'Clear All',
+                        style: TextStyle(
+                            shadows: const [
+                              BoxShadow(
+                                  color: Colors.black,
+                                  blurRadius: 1,
+                                  offset: Offset(1, 1))
+                            ],
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                      backgroundColor: Colors.red,
+                      onPressed: () => showDeleteConfirmationDialog(
+                          context: context,
+                          deleteText:
+                              'Are you sure you want to delete all devices? ',
+                          onDeleteFun: () {
+                            myHiveService.deleteAllDevices();
+                            Navigator.of(context).pop();
+                          }),
+                    ),
                   ],
                 ),
               ),
@@ -63,8 +90,24 @@ class AddDevicesScreen extends StatelessWidget {
                   itemCount: myHiveService.devices.length,
                   itemBuilder: (context, deviceIndex) {
                     return CustomSlidable(
+                      editFunction: () {
+                        openBottomSheet(
+                            context,
+                            EditDevice(
+                              deviceIndex: deviceIndex,
+                            ));
+                      },
                       keyY: Key(myHiveService.devices[deviceIndex].id),
-                      index: deviceIndex,
+                      deleteFunction: () {
+                        showDeleteConfirmationDialog(
+                            context: context,
+                            deleteText:
+                                'Are you sure you want to delete this device?',
+                            onDeleteFun: () {
+                              myHiveService.deleteDevice(index: deviceIndex);
+                              Navigator.of(context).pop();
+                            });
+                      },
                       child: CustomCard(
                         iconOfTrailing: const Icon(
                           Icons.add,
@@ -72,11 +115,13 @@ class AddDevicesScreen extends StatelessWidget {
                         ),
                         onTapOnTrailing: () {
                           showAddReservationDialog(
-                            context: context,
-                            deviceIndex: deviceIndex,
-                          );
+                              context: context,
+                              deviceIndex: deviceIndex,
+                              notDoublePop: false);
                         },
-                        onTap: () => showDeviceReservationsDialog(hive: myHiveService,
+                        onTap: () => showDeviceReservationsDialog(
+                            reservationService: myReservationService,
+                            hive: myHiveService,
                             deviceIndex: deviceIndex,
                             context: context,
                             notDoublePop: true),
@@ -117,10 +162,11 @@ class AddDevicesScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        colorOfReservedCircle:
-                            (!myHiveService.devices[deviceIndex].reserved)
-                                ? Colors.red
-                                : Colors.green,
+                        colorOfReservedCircle: (myReservationService
+                                .getCurrentReservations(deviceIndex)
+                                .isEmpty)
+                            ? Colors.red
+                            : Colors.green,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(double.infinity),
                         ),

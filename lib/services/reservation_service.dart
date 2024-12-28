@@ -10,104 +10,131 @@ import '../models/hive_models/reservation_model.dart';
 class ReservationService extends ChangeNotifier {
   final HiveService myHiveService;
   late final Box<MyDevice> _box;
-  final Map<int, Duration> _durations = {};
-  final Map<int, Timer> _timers = {};
+  Map<int, Map<int, Timer>> _timers = {};
+  List<Reservation> _currentReservations = [];
+  List<Reservation> _expiredReservations = [];
+  bool timerIsOn = false;
 
-  Map<int, Duration> get durations => _durations;
-
+  // Constructor
   ReservationService(this.myHiveService) {
     _box = myHiveService.box;
   }
 
+  List<Reservation> getCurrentReservations(int deviceIndex) {
+    loadReservation(deviceIndex);
+    return _currentReservations;
+  }
 
-  /// Starts the reservation process for a device.
+  List<Reservation> getExpiredReservations(int deviceIndex) {
+    loadReservation(deviceIndex);
+    return _expiredReservations;
+  }
+
+  // Start a new reservation
   Future<void> startReservation({
-    required BuildContext context,
     required int deviceIndex,
     required Reservation reservation,
   }) async {
-    final device=myHiveService.devices[deviceIndex];
-    // Add the new reservation
-    device.reservations!.add(reservation);
-    device.reserved = true;
-    // Update the device in the box
-    await _box.putAt(deviceIndex,device);
-    notifyListeners();
-  }
-
-  /// Cancels the reservation.
-  Future<void> cancelReservation({
-    required int deviceIndex,
-    required int reservationIndex, // Changed to reservationIndex
-  }) async {
     final device = myHiveService.devices[deviceIndex];
-    device.reservations!.removeAt(reservationIndex);
-    device.reserved = device.reservations!.isNotEmpty;
+    device.reservations.add(reservation);
+    device.reserved = true;
     await _box.putAt(deviceIndex, device);
     notifyListeners();
   }
 
-  Future<void> checkReservationForOneDevice(int deviceIndex) async {
-    final myDevice = myHiveService.devices[deviceIndex];
-    for (int reserveIndex = 0;
-        reserveIndex < myDevice.reservations!.length;
-        reserveIndex++) {
-      final Duration difference = myDevice.reservations![reserveIndex].endTime
-          .difference(DateTime.now());
-      if (difference.inSeconds <= 0) {
-        cancelReservation(
-            deviceIndex: deviceIndex, reservationIndex: reserveIndex);
-      }
-    }
-  }
-
-  Future<void> checkReservationForAllDevices() async {
-    for (int deviceIndex = 0;
-        deviceIndex < myHiveService.devices.length;
-        deviceIndex++) {
-      final myDevice = myHiveService.devices[deviceIndex];
-      if (myDevice.reserved) {
-        await checkReservationForOneDevice(deviceIndex);
-      }
-    }
+  // Cancel an existing reservation
+  Future<void> cancelReservation({
+    required int deviceIndex,
+    required int reservationIndex,
+  }) async {
+    final device = myHiveService.devices[deviceIndex];
+    device.reservations.removeAt(reservationIndex);
+    device.reserved = device.reservations.isNotEmpty;
+    await _box.putAt(deviceIndex, device);
     notifyListeners();
   }
 
-  /// Updates the reservation state of the device at the given index.
-  Future<void> _updateDeviceReservation(int index, bool reserved) async {
-    myHiveService.devices[index].reserved = reserved;
-    await _box.putAt(index, myHiveService.devices[index]);
+  // Load reservations for a specific device
+  Future<void> loadReservation(int deviceIndex) async {
+    _currentReservations = myHiveService.devices[deviceIndex].reservations;
+    _filterExpiredReservations();
+  }
+
+  // Filter expired reservations
+  void _filterExpiredReservations() {
+    DateTime now = DateTime.now();
+    _expiredReservations =
+        _currentReservations.where((r) => r.endTime.isBefore(now)).toList();
+    _currentReservations.removeWhere((r) => r.endTime.isBefore(now));
+  }
+
+  // Edit an existing reservation
+  Future<void> editReservation({
+    required Reservation newReservation,
+    required int deviceIndex,
+    required int reservationIndex,
+  }) async {
+    final device = myHiveService.devices[deviceIndex];
+    device.reservations[reservationIndex] = newReservation;
+    await _box.putAt(deviceIndex, device);
     notifyListeners();
   }
 
-  /// Starts a countdown timer until the reservation time.
-  void startCountdown(
-      {required int deviceIndex, required int reservationIndex}) {
-    _durations[deviceIndex] = myHiveService
-            .devices[deviceIndex].reservations!.last.endTime
-            .isBefore(DateTime.now())
-        ? Duration.zero
-        : myHiveService.devices[deviceIndex].reservations!.last.endTime
-            .difference(DateTime.now());
+  void startTimer(int deviceIndex, int reservationIndex) {
+    Reservation reservation =
+        myHiveService.devices[deviceIndex].reservations[reservationIndex];
+    int remainingTimeSeconds =
+        reservation.endTime.difference(DateTime.now()).inSeconds;
 
-    _timers[deviceIndex]?.cancel();
+    _timers[deviceIndex] = {};
 
-    _timers[deviceIndex] = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_durations[deviceIndex]!.inSeconds > 0) {
-        _durations[deviceIndex] =
-            _durations[deviceIndex]! - const Duration(seconds: 1);
-        notifyListeners(); // Notify listeners to update UI
+    // Initialize the timer for countdown
+    _timers[deviceIndex]![reservationIndex] =
+        Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (remainingTimeSeconds > 0) {
+        remainingTimeSeconds--;
+        editReservation(
+            newReservation: Reservation(
+                startTime: reservation.startTime,
+                endTime: reservation.endTime,
+                customerName: reservation.customerName,
+                remainingTime: remainingTimeSeconds,
+                reservationID: reservation.reservationID),
+            deviceIndex: deviceIndex,
+            reservationIndex: reservationIndex);
       } else {
         timer.cancel();
         cancelReservation(
             reservationIndex: reservationIndex, deviceIndex: deviceIndex);
       }
+      notifyListeners();
     });
+  }
+
+  // Start countdown for a reservation
+  void startCountdown({
+    required int deviceIndex,
+    required int reservationIndex,
+  }) {
+    // Get the reservation and calculate the duration
+    Reservation reservation =
+        myHiveService.devices[deviceIndex].reservations[reservationIndex];
+
+    int remainingTimeSeconds = myHiveService
+        .devices[deviceIndex].reservations[reservationIndex].remainingTime;
+    Duration myDuration = Duration(seconds: remainingTimeSeconds);
+
+    /// Whether this [startTime] occurs after [now].
+    if (reservation.startTime.isBefore(DateTime.now()) &&
+        _timers[deviceIndex]?[reservationIndex] == null) {
+      startTimer(deviceIndex, reservationIndex);
+    }
   }
 
   @override
   void dispose() {
-    _timers.forEach((key, timer) => timer.cancel());
+    // Cancel all timers when disposing the service
+
     super.dispose();
   }
 }

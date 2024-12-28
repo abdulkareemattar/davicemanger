@@ -93,7 +93,7 @@ class CustomCard extends StatelessWidget {
                           border: Border.all(color: Colors.black)),
                       child: CircleAvatar(
                         backgroundColor: colorOfReservedCircle,
-                        child: iconOfTrailing // أيقونة في الزاوية
+                        child: iconOfTrailing
                       ),
                     ),
                   ),

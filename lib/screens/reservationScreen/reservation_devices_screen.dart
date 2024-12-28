@@ -7,10 +7,13 @@ import 'package:untitled8/screens/reservationScreen/start_reservation_dialog.dar
 import '../../Functions/get_device_icon.dart';
 import '../../services/hive_service.dart';
 import '../../services/reservation_service.dart';
+import '../../widgets/custom_bottomsheet.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/custom_delete_dialog.dart';
 import '../../widgets/custom_gridview.dart';
 import '../../widgets/custom_slidable.dart';
+import '../addScreen/edit_device_bottomsheet.dart';
 import '../addScreen/showReservationsDialog.dart';
 
 class ReservationDevices extends StatelessWidget {
@@ -63,8 +66,24 @@ class ReservationDevices extends StatelessWidget {
                   itemCount: myHiveService.reservedDevices.length,
                   itemBuilder: (context, deviceIndex) {
                     return CustomSlidable(
+                      editFunction: () {
+                        openBottomSheet(
+                            context,
+                            EditDevice(
+                              deviceIndex: deviceIndex,
+                            ));
+                      },
+                      deleteFunction: () {
+                        showDeleteConfirmationDialog(
+                            context: context,
+                            deleteText:
+                                'Are you sure you want to delete this device?',
+                            onDeleteFun: () {
+                              myHiveService.deleteDevice(index: deviceIndex);
+                              Navigator.of(context).pop();
+                            });
+                      },
                       keyY: Key(myHiveService.reservedDevices[deviceIndex].id),
-                      index: deviceIndex,
                       child: CustomCard(
                         iconOfTrailing: Icon(Icons.power_settings_new_sharp,
                             size: 16.sp, color: Colors.black),
@@ -76,7 +95,9 @@ class ReservationDevices extends StatelessWidget {
                             deviceIndex: deviceIndex,
                           );
                         },
-                        onTap: () => showDeviceReservationsDialog(hive: myHiveService,
+                        onTap: () => showDeviceReservationsDialog(
+                            reservationService: myReservationService,
+                            hive: myHiveService,
                             deviceIndex: deviceIndex,
                             context: context,
                             notDoublePop: true),
@@ -122,9 +143,10 @@ class ReservationDevices extends StatelessWidget {
                               style: TextStyle(
                                   shadows: const [
                                     BoxShadow(
-                                        color: Colors.black,
-                                        blurRadius: 1,
-                                        offset: Offset(1, 1))
+                                      color: Colors.black,
+                                      blurRadius: 1,
+                                      offset: Offset(1, 1),
+                                    ),
                                   ],
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,

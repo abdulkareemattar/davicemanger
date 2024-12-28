@@ -9,7 +9,6 @@ import '../../Functions/get_device_icon.dart';
 import '../../Functions/show_snackbar.dart';
 import '../../models/hive_models/devices.dart';
 import '../../services/hive_service.dart';
-import '../../services/reservation_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_textformfield.dart';
@@ -24,7 +23,6 @@ class AddDeviceForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final myHiveService = Provider.of<HiveService>(context);
-    final myReservationService = Provider.of<ReservationService>(context);
 
     return SingleChildScrollView(
       child: Padding(

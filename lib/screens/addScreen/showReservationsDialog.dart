@@ -1,32 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:untitled8/screens/reservationScreen/start_reservation_dialog.dart';
 import 'package:untitled8/services/hive_service.dart';
+import 'package:untitled8/services/reservation_service.dart';
 
 import '../../models/hive_models/reservation_model.dart';
+import '../../widgets/custom_reservation_card.dart';
 
 class DeviceReservationsDialog extends StatelessWidget {
   final int deviceIndex;
   final HiveService hiveService;
+  final ReservationService reservationService;
 
   const DeviceReservationsDialog({
     super.key,
     required this.deviceIndex,
     required this.hiveService,
+    required this.reservationService,
   });
 
   @override
   Widget build(BuildContext context) {
-    final reservations = hiveService.devices[deviceIndex].reservations;
+    final currentReservations = reservationService.getCurrentReservations(deviceIndex);
 
-    // تجميع الحجوزات حسب اليوم
-    Map<String, List<Reservation>> groupedReservations = {};
-    for (var reservation in reservations) {
+    // تجميع الحجوزات حسب التاريخ
+    Map<String, List<Map<String, dynamic>>> groupedReservations = {};
+
+    for (int i = 0; i < currentReservations.length; i++) {
+      Reservation reservation = currentReservations[i];
       String dateKey = DateFormat('yyyy-MM-dd').format(reservation.startTime);
-      if (!groupedReservations.containsKey(dateKey)) {
-        groupedReservations[dateKey] = [];
-      }
-      groupedReservations[dateKey]!.add(reservation);
+
+      // إضافة الرقم الأصلي للحجز مع الحجز نفسه
+      groupedReservations.putIfAbsent(dateKey, () => []).add({
+        'reservation': reservation,
+        'originalIndex': i,
+      });
     }
 
     return AlertDialog(
@@ -36,80 +44,35 @@ class DeviceReservationsDialog extends StatelessWidget {
             const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
       ),
       content: groupedReservations.isEmpty
-          ? const Center(child: Text('No reservations found.'))
-          : Container(
+          ? const SizedBox(child: Text('No Reservations Found.'))
+          : SizedBox(
               width: double.maxFinite,
               child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: groupedReservations.keys.length,
+                itemCount: groupedReservations.length,
                 itemBuilder: (context, index) {
                   String dateKey = groupedReservations.keys.elementAt(index);
-                  List<Reservation> dailyReservations =
+                  List<Map<String, dynamic>> dailyReservations =
                       groupedReservations[dateKey]!;
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    elevation: 10,
-                    shadowColor: Colors.black26,
-                    child: ExpansionTile(
-                      title: Text(
-                        dateKey,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Chip(
+                        label: Text(dateKey),
                       ),
-                      children: dailyReservations.map((reservation) {
-                        return SizedBox(
-                          child: ListTile(
-                            title: SizedBox(
-                              height: 160.h,
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Text(
-                                      'from : ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green),
-                                    ),
-                                    Chip(
-                                        label: Text(
-                                            '${DateFormat(' dd-mm-yyyy : kk:mm').format(reservation.startTime)}')),
-                                    Text(
-                                      'to : ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                    Chip(
-                                        label: Text(
-                                            '${DateFormat(' dd-mm-yyyy : kk:mm').format(reservation.endTime)}')),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            subtitle: Row(
-                              children: [
-                                Text(
-                                  'Reserved by: ',
-                                  style: TextStyle(
-                                      color: Colors.purple,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Chip(
-                                  label: Text(
-                                    '${reservation.customerName}',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: Icon(Icons.event_available,
-                                color: Colors.purple),
-                          ),
+                      ...dailyReservations.map((item) {
+                        Reservation reservation = item['reservation'];
+                        int originalIndex = item['originalIndex'];
+
+                        return CustomReservationCard(reservationService: reservationService,
+                          title: reservation.customerName,
+                          dailyReservations: [reservation],
+                          deviceIndex: deviceIndex,
+                          reservationIndex: originalIndex,
                         );
-                      }).toList(),
-                    ),
+                      }),
+                    ],
                   );
                 },
               ),
@@ -119,17 +82,25 @@ class DeviceReservationsDialog extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
           child: const Text('Close', style: TextStyle(color: Colors.purple)),
         ),
+        TextButton(
+          onPressed: () => showAddReservationDialog(
+            notDoublePop: true,
+            context: context,
+            deviceIndex: deviceIndex,
+          ),
+          child: const Text('Add', style: TextStyle(color: Colors.purple)),
+        ),
       ],
     );
   }
 }
 
-// Usage function
 void showDeviceReservationsDialog({
   required BuildContext context,
   required int deviceIndex,
   required bool notDoublePop,
   required HiveService hive,
+  required ReservationService reservationService,
 }) {
   showDialog(
     barrierDismissible: false,
@@ -138,6 +109,7 @@ void showDeviceReservationsDialog({
       return DeviceReservationsDialog(
         hiveService: hive,
         deviceIndex: deviceIndex,
+        reservationService: reservationService,
       );
     },
   );

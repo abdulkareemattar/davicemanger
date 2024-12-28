@@ -8,70 +8,133 @@ class MyBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
 
-  const MyBottomNavigationBar({super.key, required this.currentIndex, required this.onTap});
+  const MyBottomNavigationBar(
+      {super.key, required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20, left: 50, right: 50),
+      padding: EdgeInsets.only(bottom: 15.h, left: 50, right: 50),
       child: Stack(
         alignment: Alignment.center,
         children: [
-
-          ClipRRect(borderRadius: BorderRadius.circular(200),
-            child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10,sigmaY: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(200),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: BottomNavigationBar(
                 enableFeedback: true,
                 selectedLabelStyle: TextStyle(
-                  fontSize: 16.sp, // تأكد من استخدام ScreenUtil إذا كنت تستخدمه
-                  color: Colors.white,
+                  fontSize: 12.sp,
+                  color: Colors.purpleAccent,
                 ),
                 mouseCursor: MouseCursor.defer,
                 backgroundColor: Colors.transparent,
                 fixedColor: Colors.white,
-                showSelectedLabels: false,
+                showSelectedLabels: true,
                 showUnselectedLabels: false,
                 landscapeLayout: BottomNavigationBarLandscapeLayout.spread,
-                iconSize: 30,
+                iconSize: 24.sp,
                 currentIndex: currentIndex,
                 type: BottomNavigationBarType.fixed,
                 onTap: onTap,
-                items: const [
+                items: [
                   BottomNavigationBarItem(
-                    icon: Icon(
-                      FontAwesomeIcons.circlePlus,
-                      color: Colors.green,
-                      shadows: [
-                        Shadow(color: Colors.black, offset: Offset(1, 1))
-                      ],
+                    icon: Padding(
+                      padding: EdgeInsets.only(bottom: 3.h),
+                      child: Icon(
+                        FontAwesomeIcons.house,
+                        color: Colors.purpleAccent,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
                     ),
-                    label: 'Add',
+                    label: 'Home',
+                    activeIcon: Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: Icon(
+                        FontAwesomeIcons.houseChimneyWindow,
+                        color: Colors.purpleAccent,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(FontAwesomeIcons.gamepad,color: Colors.red, shadows: [
-                      Shadow(color: Colors.black, offset: Offset(1, 1))
-                    ],),
+                    activeIcon: Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: Icon(
+                        FontAwesomeIcons.circleDot,
+                        color: Colors.green,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
+                    icon: Padding(
+                      padding: EdgeInsets.only(bottom: 3.h),
+                      child: Icon(
+                        FontAwesomeIcons.circle,
+                        color: Colors.green,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
                     label: 'Active',
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(FontAwesomeIcons.calendar,color: Colors.yellow,
-                      shadows: [
-                        Shadow(color: Colors.black, offset: Offset(1, 1))
-                      ],),
+                    icon: Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: const Icon(
+                        FontAwesomeIcons.solidCalendar,
+                        color: Colors.yellow,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
                     label: 'Reservation',
+                    activeIcon: Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: Icon(
+                        FontAwesomeIcons.solidCalendarDays,
+                        color: Colors.yellow,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.settings,color: Colors.purple,
-                      shadows: [
-                        Shadow(color: Colors.black, offset: Offset(1, 1))
-                      ],),
+                    activeIcon: Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: Icon(
+                        Icons.settings_suggest,
+                        color: Colors.red,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
+                    icon: Padding(
+                      padding: EdgeInsets.only(bottom: 3.h),
+                      child: Icon(
+                        Icons.settings,
+                        color: Colors.red,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
                     label: 'Settings',
                   ),
                 ],
               ),
             ),
           ),
-
         ],
       ),
     );

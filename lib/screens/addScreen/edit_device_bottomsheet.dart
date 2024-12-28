@@ -6,7 +6,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../Functions/get_device_icon.dart';
 import '../../models/hive_models/devices.dart';
-import '../../services/reservation_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_textformfield.dart';
@@ -21,8 +20,6 @@ class EditDevice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myReservationService =
-        Provider.of<ReservationService>(context, listen: false);
     final myHiveService = Provider.of<HiveService>(context, listen: true);
     final TextEditingController name =
         TextEditingController(text: myHiveService.devices[deviceIndex].name);

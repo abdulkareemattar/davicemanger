@@ -1,43 +1,45 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled8/Functions/show_snackbar.dart';
-import 'package:untitled8/services/hive_service.dart';
+
+import '../services/hive_service.dart';
+import '../widgets/custom_information_dialog.dart';
+// ... other imports
 
 bool checkIfDateConflict({
   required DateTime startTime,
   required DateTime endTime,
+  required String? reservationID,
   required int deviceIndex,
   required BuildContext context,
 }) {
-  // 1. Input Validation: Check for invalid date ranges
-  if (startTime.isAfter(endTime)) {
-    showCustomSnackBar(
-      context: context,
-      txt: 'End time cannot be before start time.',
-    );
-    return true; // Indicate an error
+  // 1. Check for past reservation attempts
+  if (endTime.isBefore(DateTime.now())) {
+    showCustomInfDialog(
+        context: context, txt: 'You Can\'t Reserve in The Past');
+    return true;
   }
-
-  // 2. Handle null or invalid deviceIndex
+  // 2. Handle null or invalid deviceIndex and reservations
   final hiveService = Provider.of<HiveService>(context, listen: false);
-  final reservations = hiveService.devices[deviceIndex].reservations;
+  final device = hiveService.devices[deviceIndex];
+  final reservations = device.reservations;
 
-  // 3. Handle null or empty reservations list (as before)
-  if (reservations == null || reservations.isEmpty) {
-    return false; // No conflicts if there are no reservations
+  // 3. Handle empty reservations list
+  if (reservations.isEmpty) {
+    return false; // No conflicts if no reservations exist
   }
 
-  // 4. Check for conflicts (as before, but improved)
+  // 4. Check for conflicts, handling overlapping times more precisely
   for (final reservation in reservations) {
-    //More robust overlap check. Handles edge cases where start/end times are equal.
+    //Skip self-comparison
+    if (reservation.reservationID == reservationID) continue;
+
+    //Improved overlap check: Uses isAfter and isBefore for more accurate comparisons
     if (startTime.isBefore(reservation.endTime) &&
-            endTime.isAfter(reservation.startTime) ||
-        startTime.isAtSameMomentAs(reservation.startTime) ||
-        endTime.isAtSameMomentAs(reservation.endTime)) {
-      showCustomSnackBar(
+        endTime.isAfter(reservation.startTime)) {
+      showCustomInfDialog(
         context: context,
         txt:
-            'There is a conflict with an existing reservation from ${reservation.startTime} to ${reservation.endTime}.',
+            'Conflict with reservation from ${reservation.startTime} to ${reservation.endTime}.',
       );
       return true;
     }

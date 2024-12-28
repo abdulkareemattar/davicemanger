@@ -9,7 +9,7 @@ void showDialogEndReservation({
   required int reservationIndex,
   required MyDevice myDevice,
 }) {
-  final reservation = myDevice.reservations![reservationIndex];
+  final reservation = myDevice.reservations[reservationIndex];
 
   showDialog(
     context: context,
@@ -23,7 +23,7 @@ void showDialogEndReservation({
             Wrap( // Use a Wrap to arrange Chips horizontally
               spacing: 8.0, // Spacing between Chips
               children: [
-                _buildChip('Customer', reservation.customerName!),
+                _buildChip('Customer', reservation.customerName),
                 _buildChip('Start', reservation.startTime.toIso8601String()),
                 _buildChip('End', reservation.endTime.toIso8601String()),
               ],

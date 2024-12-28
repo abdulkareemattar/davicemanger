@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
-
-import '../services/hive_service.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void showDeleteConfirmationDialog(
-    BuildContext context, HiveService hiveService, int index) {
+    {required BuildContext context,
+    required String deleteText,
+    required Function onDeleteFun}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this device?'),
+        title: Row(
+          children: [
+            Text(
+              'Confirm Delete',
+              style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.sp),
+            ),
+            Spacer(),
+            Icon(
+              FontAwesomeIcons.triangleExclamation,
+              color: Colors.yellow,
+            )
+          ],
+        ),
+        content: Text(deleteText),
         actions: <Widget>[
           TextButton(
             child: const Text('Cancel'),
@@ -18,10 +35,15 @@ void showDeleteConfirmationDialog(
             },
           ),
           TextButton(
-            child: const Text('Delete'),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             onPressed: () {
-              hiveService.deleteDevice(index: index);
-              Navigator.of(context).pop();
+              onDeleteFun;
             },
           ),
         ],

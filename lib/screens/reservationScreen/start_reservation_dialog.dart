@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:untitled8/Functions/show_snackbar.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/widgets/custom_textformfield.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../Functions/check_date_conflects.dart';
 import '../../Functions/time&date_picker.dart';
@@ -13,16 +14,17 @@ import '../../widgets/custom_datetime_picker_formfield.dart';
 
 class AddReservationDialog extends StatelessWidget {
   final int deviceIndex;
-  bool? notDoublePop = true;
+  bool notDoublePop = true;
 
   AddReservationDialog({
     super.key,
     required this.deviceIndex,
-    this.notDoublePop,
+    required this.notDoublePop,
   });
 
   @override
   Widget build(BuildContext context) {
+    Uuid uuid = const Uuid();
     final myHiveService = Provider.of<HiveService>(context, listen: false);
     final myReservationService =
         Provider.of<ReservationService>(context, listen: false);
@@ -85,6 +87,7 @@ class AddReservationDialog extends StatelessWidget {
                 onPressed: () {
                   if ((nameController.text.isNotEmpty) &&
                       (!checkIfDateConflict(
+                          reservationID: null,
                           context: context,
                           deviceIndex: deviceIndex,
                           endTime: endTime!,
@@ -94,23 +97,26 @@ class AddReservationDialog extends StatelessWidget {
                         txt:
                             "Start Reservation: device name :${myHiveService.devices[deviceIndex].name}, startTime=$startTime,endTime=$endTime, Customer Name=${nameController.text}");
                     myReservationService.startReservation(
-                      context: context,
                       deviceIndex: deviceIndex,
-                      reservation: Reservation(
+                      reservation: Reservation(remainingTime:   endTime!.difference(startTime!).inSeconds,
+                          reservationID: uuid.v4(),
                           startTime: startTime!,
                           endTime: endTime!,
                           customerName: nameController.text),
                     );
-                    Navigator.pop(context);
+                    if (notDoublePop) {
+                      Navigator.pop(context);
+                    } else {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    }
                   }
                 },
                 child: const Text('Start Reservation',
                     style: TextStyle(color: Colors.purple)),
               ),
               TextButton(
-                onPressed: () => {
-                  Navigator.pop(context)
-                },
+                onPressed: () => {Navigator.pop(context)},
                 // Close dialog without canceling reservation
                 child:
                     const Text('Cancel', style: TextStyle(color: Colors.grey)),
@@ -127,7 +133,7 @@ class AddReservationDialog extends StatelessWidget {
 void showAddReservationDialog({
   required BuildContext context,
   required int deviceIndex,
-  bool? notDoublePop = true,
+  bool notDoublePop = true,
 }) {
   showDialog(
     barrierDismissible: false,
