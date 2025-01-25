@@ -6,7 +6,7 @@ import '../services/reservation_service.dart';
 void showCancellationConfirmationDialog(
     {required BuildContext context,
     required ReservationService myReservationService,
-    required int deviceIndex,
+    required String deviceId,
     required int reservationIndex}) {
   showDialog(
     context: context,
@@ -27,7 +27,7 @@ void showCancellationConfirmationDialog(
           TextButton(
             onPressed: () {
               myReservationService.cancelReservation(
-                  deviceIndex: deviceIndex, reservationIndex: reservationIndex);
+                  deviceId: deviceId, reservationIndex: reservationIndex);
               Navigator.pop(context); // Close confirmation dialog
               Navigator.pop(context); // Close original dialog
             },

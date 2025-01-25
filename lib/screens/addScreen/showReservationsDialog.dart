@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:untitled8/Functions/get_custom_textstyle.dart';
 import 'package:untitled8/screens/reservationScreen/start_reservation_dialog.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/services/reservation_service.dart';
@@ -8,29 +10,31 @@ import '../../models/hive_models/reservation_model.dart';
 import '../../widgets/custom_reservation_card.dart';
 
 class DeviceReservationsDialog extends StatelessWidget {
-  final int deviceIndex;
+  final String deviceId;
   final HiveService hiveService;
   final ReservationService reservationService;
 
   const DeviceReservationsDialog({
     super.key,
-    required this.deviceIndex,
+    required this.deviceId,
     required this.hiveService,
     required this.reservationService,
   });
 
   @override
   Widget build(BuildContext context) {
-    final currentReservations = reservationService.getCurrentReservations(deviceIndex);
+    int deviceIndex = hiveService.devices.indexWhere(
+      (d) => d.id == deviceId,
+    );
+    final List<Reservation> currentReservations = reservationService
+        .getCurrentReservations(hiveService.devices[deviceIndex].id);
 
-    // تجميع الحجوزات حسب التاريخ
     Map<String, List<Map<String, dynamic>>> groupedReservations = {};
 
     for (int i = 0; i < currentReservations.length; i++) {
       Reservation reservation = currentReservations[i];
       String dateKey = DateFormat('yyyy-MM-dd').format(reservation.startTime);
 
-      // إضافة الرقم الأصلي للحجز مع الحجز نفسه
       groupedReservations.putIfAbsent(dateKey, () => []).add({
         'reservation': reservation,
         'originalIndex': i,
@@ -39,9 +43,9 @@ class DeviceReservationsDialog extends StatelessWidget {
 
     return AlertDialog(
       title: Text(
-        'Reservations for Device ${hiveService.devices[deviceIndex].name}',
+        'Reservations for Device " ${hiveService.devices[deviceIndex].name} "',
         style:
-            const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+             getTextStyle(type: FontTypeEnum.headLineLarge, color: Colors.white)
       ),
       content: groupedReservations.isEmpty
           ? const SizedBox(child: Text('No Reservations Found.'))
@@ -58,17 +62,24 @@ class DeviceReservationsDialog extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
                       Chip(
-                        label: Text(dateKey),
+                        label: Text(
+                         dateKey,
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber,fontSize: 12.sp),
+                        ),
+                        backgroundColor: Colors.purple,
                       ),
+
                       ...dailyReservations.map((item) {
                         Reservation reservation = item['reservation'];
                         int originalIndex = item['originalIndex'];
 
-                        return CustomReservationCard(reservationService: reservationService,
+                        return CustomReservationCard(
+                          reservationService: reservationService,hiveService: hiveService,
                           title: reservation.customerName,
                           dailyReservations: [reservation],
-                          deviceIndex: deviceIndex,
+                          deviceId: hiveService.devices[deviceIndex].id,
                           reservationIndex: originalIndex,
                         );
                       }),
@@ -83,10 +94,10 @@ class DeviceReservationsDialog extends StatelessWidget {
           child: const Text('Close', style: TextStyle(color: Colors.purple)),
         ),
         TextButton(
-          onPressed: () => showAddReservationDialog(
-            notDoublePop: true,
+          onPressed: () => showAddReservationDialog(hiveService: hiveService,
+            notDoublePop: false,
             context: context,
-            deviceIndex: deviceIndex,
+            deviceId: hiveService.devices[deviceIndex].id,
           ),
           child: const Text('Add', style: TextStyle(color: Colors.purple)),
         ),
@@ -97,7 +108,7 @@ class DeviceReservationsDialog extends StatelessWidget {
 
 void showDeviceReservationsDialog({
   required BuildContext context,
-  required int deviceIndex,
+  required String deviceId,
   required bool notDoublePop,
   required HiveService hive,
   required ReservationService reservationService,
@@ -108,7 +119,7 @@ void showDeviceReservationsDialog({
     builder: (BuildContext context) {
       return DeviceReservationsDialog(
         hiveService: hive,
-        deviceIndex: deviceIndex,
+        deviceId: deviceId,
         reservationService: reservationService,
       );
     },

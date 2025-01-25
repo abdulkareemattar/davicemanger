@@ -1,3 +1,4 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -13,40 +14,50 @@ import '../../services/reservation_service.dart';
 import '../../widgets/custom_datetime_picker_formfield.dart';
 
 class AddReservationDialog extends StatelessWidget {
-  final int deviceIndex;
-  bool notDoublePop = true;
+  final String deviceId;
+  final HiveService hiveService;
+  final bool notDoublePop;
+  final _formKey = GlobalKey<FormState>();
 
   AddReservationDialog({
     super.key,
-    required this.deviceIndex,
     required this.notDoublePop,
+    required this.deviceId,
+    required this.hiveService,
   });
 
   @override
   Widget build(BuildContext context) {
+    final originalDeviceIndex = hiveService.devices.indexWhere((d) => d.id == deviceId);
     Uuid uuid = const Uuid();
     final myHiveService = Provider.of<HiveService>(context, listen: false);
-    final myReservationService =
-        Provider.of<ReservationService>(context, listen: false);
+    final myReservationService = Provider.of<ReservationService>(context, listen: false);
     DateTime? startTime;
     DateTime? endTime;
     final TextEditingController nameController = TextEditingController();
 
     return AlertDialog(
       title: Text(
-          'Start reservation for ${myHiveService.devices[deviceIndex].name} device'),
+          'Start reservation for ${myHiveService.devices[originalDeviceIndex].name} device'),
       content: Padding(
-        padding: EdgeInsets.only(top: 20.0.h),
+        padding: EdgeInsets.only(top: 10.0.h),
         child: Form(
+          key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CustomTextFormField(
                 validate: (value) =>
-                    value.isEmpty ? "Please Enter Customer's Username" : null,
+                value!.isEmpty ? "Please Enter Customer's Username" : null,
                 txt: "Enter the Customer Name :",
                 controller: nameController,
-                label: 'Customer Name',
+                label: Row(
+                  children: [
+                    Text('Customer Name'),
+                    Spacer(),
+                    Icon(FluentIcons.person_add_32_regular)
+                  ],
+                ),
                 keyboard: TextInputType.text,
               ),
               CustomBasicDateTimeField(
@@ -54,11 +65,17 @@ class AddReservationDialog extends StatelessWidget {
                     ? "Please select start time for the Reservation"
                     : null,
                 txt:
-                    'Enter The (date & time) that you will start reserve this device at :',
-                label: 'Start Date & Time',
+                'Enter The (date & time) that you will start reserve this device at :',
+                label: Row(
+                  children: [
+                    Text('Start Date & Time'),
+                    Spacer(),
+                    Icon(FluentIcons.calendar_12_filled)
+                  ],
+                ),
                 onShowPicker: (context, current) async {
                   return startTime =
-                      await getTime(context: context, currentValue: current);
+                  await getTime(context: context, currentValue: current);
                 },
               ),
               CustomBasicDateTimeField(
@@ -66,11 +83,17 @@ class AddReservationDialog extends StatelessWidget {
                     ? "Please select end time for the Reservation"
                     : null,
                 txt:
-                    'Enter The (date & time) that you will end reserve for this device at :',
-                label: 'End Date & Time',
+                'Enter The (date & time) that you will end reserve for this device at :',
+                label: Row(
+                  children: [
+                    Text('End Date & Time'),
+                    Spacer(),
+                    Icon(FluentIcons.calendar_12_filled)
+                  ],
+                ),
                 onShowPicker: (context, current) async {
                   return endTime =
-                      await getTime(context: context, currentValue: current);
+                  await getTime(context: context, currentValue: current);
                 },
               ),
             ],
@@ -85,24 +108,29 @@ class AddReservationDialog extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () {
-                  if ((nameController.text.isNotEmpty) &&
-                      (!checkIfDateConflict(
-                          reservationID: null,
-                          context: context,
-                          deviceIndex: deviceIndex,
-                          endTime: endTime!,
-                          startTime: startTime!))) {
+                  if (_formKey.currentState!.validate() &&
+                      !checkIfDateConflict(
+                        reservationID: null,
+                        context: context,
+                        deviceIndex: originalDeviceIndex,
+                        endTime: endTime!,
+                        startTime: startTime!,
+                      )) {
                     showCustomSnackBar(
                         context: context,
                         txt:
-                            "Start Reservation: device name :${myHiveService.devices[deviceIndex].name}, startTime=$startTime,endTime=$endTime, Customer Name=${nameController.text}");
+                        "Start Reservation: device name :${myHiveService.devices[originalDeviceIndex].name}, startTime=$startTime,endTime=$endTime, Customer Name=${nameController.text}");
                     myReservationService.startReservation(
-                      deviceIndex: deviceIndex,
-                      reservation: Reservation(remainingTime:   endTime!.difference(startTime!).inSeconds,
-                          reservationID: uuid.v4(),
-                          startTime: startTime!,
-                          endTime: endTime!,
-                          customerName: nameController.text),
+                      deviceId:
+                      myHiveService.devices[originalDeviceIndex].id,
+                      reservation: Reservation(
+                        remainingTime:
+                        endTime!.difference(startTime!).inSeconds,
+                        reservationID: uuid.v4(),
+                        startTime: startTime!,
+                        endTime: endTime!,
+                        customerName: nameController.text,
+                      ),
                     );
                     if (notDoublePop) {
                       Navigator.pop(context);
@@ -112,14 +140,18 @@ class AddReservationDialog extends StatelessWidget {
                     }
                   }
                 },
-                child: const Text('Start Reservation',
-                    style: TextStyle(color: Colors.purple)),
+                child: const Text(
+                  'Start Reservation',
+                  style: TextStyle(color: Colors.purple),
+                ),
               ),
               TextButton(
                 onPressed: () => {Navigator.pop(context)},
                 // Close dialog without canceling reservation
-                child:
-                    const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
             ],
           ),
@@ -132,7 +164,8 @@ class AddReservationDialog extends StatelessWidget {
 // Usage function
 void showAddReservationDialog({
   required BuildContext context,
-  required int deviceIndex,
+  required String deviceId,
+  required HiveService hiveService,
   bool notDoublePop = true,
 }) {
   showDialog(
@@ -140,7 +173,8 @@ void showAddReservationDialog({
     context: context,
     builder: (BuildContext context) {
       return AddReservationDialog(
-        deviceIndex: deviceIndex,
+        hiveService: hiveService,
+        deviceId: deviceId,
         notDoublePop: notDoublePop,
       );
     },

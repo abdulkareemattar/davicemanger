@@ -8,7 +8,7 @@ import '../Functions/get_custom_textstyle.dart';
 class CustomBasicDateTimeField extends StatelessWidget {
   final format = DateFormat("yyyy-MM-dd HH:mm");
   final String txt;
-  final String label;
+  final Widget label;
   final DateTime? initialValue;
   final Future<DateTime?> Function(BuildContext, DateTime?) onShowPicker;
   final FormFieldValidator<DateTime>? valid;
@@ -32,11 +32,11 @@ class CustomBasicDateTimeField extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w),
           ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding:  EdgeInsets.all(10.sp),
             child: DateTimeField(
                 decoration: InputDecoration(
                   hintText: txt,
-                  label: Text(label),
+                  label: label,
                   labelStyle: getTextStyle(
                       type: FontTypeEnum.headLineSmall, color: Colors.white),
                   focusedBorder: OutlineInputBorder(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/services/reservation_service.dart';
 import 'package:untitled8/widgets/customCounter.dart';
 
@@ -10,24 +11,27 @@ import 'custom_slidable.dart';
 
 class CustomReservationCard extends StatelessWidget {
   final String title;
-  final int deviceIndex;
+  final String deviceId;
   final int reservationIndex;
   final List<dynamic> dailyReservations;
   final ReservationService reservationService;
+  final HiveService hiveService;
 
   const CustomReservationCard({
     Key? key,
     required this.title,
     required this.dailyReservations,
-    required this.deviceIndex,
+    required this.deviceId,
     required this.reservationIndex,
     required this.reservationService,
+    required this.hiveService,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final originalDeviceIndex = hiveService.devices.indexWhere((d) => d.id == deviceId);
+
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       elevation: 10,
       shadowColor: Colors.black26,
       child: Padding(
@@ -43,63 +47,79 @@ class CustomReservationCard extends StatelessWidget {
               editFunction: () {
                 showEditReservationDialog(
                   context: context,
-                  deviceIndex: deviceIndex,
+                  deviceIndex: originalDeviceIndex,
                   reservationIndex: reservationIndex,
                   notDoublePop: false,
                 );
               },
               deleteFunction: () {
                 showCancellationConfirmationDialog(
-                    deviceIndex: deviceIndex,
-                    reservationIndex: reservationIndex,
-                    context: context,
-                    myReservationService: reservationService);
+                  deviceId: deviceId,
+                  reservationIndex: reservationIndex,
+                  context: context,
+                  myReservationService: reservationService,
+                );
               },
               child: ListTile(
-                  title: SizedBox(
-                    height: 160.h,
+                title: SizedBox(
+                  height: 165.h,
+                  child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(5),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildTimeInfo(
-                              'from:', reservation.startTime, Colors.green),
-                          _buildTimeInfo(
-                              'to:', reservation.endTime, Colors.red),
+                          _buildTimeInfo('from:', reservation.startTime,Colors.white),
+                          _buildTimeInfo('to:', reservation.endTime, Colors.white),
                         ],
                       ),
                     ),
                   ),
-                  subtitle: Row(
-                    children: [
-                      Text(
-                        'Reserved by: ',
-                        style: TextStyle(
-                          color: Colors.purple,
-                          fontWeight: FontWeight.bold,
-                        ),
+                ),
+                subtitle: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Reserved by:',
+                      style: TextStyle(overflow: TextOverflow.ellipsis,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Spacer(),
-                      Chip(
-                        label: Text(reservation.customerName ??
-                            'Unknown'), // Handle null
+                    ),
+                    Chip(
+                      label: Text(
+                        reservation.customerName ?? 'Unknown',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber,fontSize: 12.sp),
                       ),
-                    ],
+                      backgroundColor: Colors.purple,
+                    ),
+
+                  ],
+                ),
+                onTap: () => {
+                  reservationService.startCountdown(
+                    deviceId: deviceId,
+                    reservationIndex: reservationIndex,
                   ),
-                  trailing: Icon(Icons.event_available, color: Colors.purple),
-                  onTap: () => {
-                        reservationService.startCountdown(
-                            deviceIndex: deviceIndex,
-                            reservationIndex: reservationIndex),
-                        showCounterDialog(
-                            context: context,
-                            deviceIndex: deviceIndex,
-                            reservationIndex: reservationIndex)
-                      }),
+                  showCounterDialog(
+                    context: context,
+                    deviceId: deviceId,
+                    reservationIndex: reservationIndex,
+                  ),
+                },
+              ),
             );
           }).toList(),
         ),
+      ),
+    );
+  }
+  Widget _colon() {
+    return  Padding(
+      padding:  EdgeInsets.symmetric(horizontal: 2.w),
+      child: Center(
+        child: Text(":",
+            style: TextStyle(
+                fontSize: 30.sp, fontWeight: FontWeight.bold, color: Colors.white)),
       ),
     );
   }
@@ -107,12 +127,31 @@ class CustomReservationCard extends StatelessWidget {
   Widget _buildTimeInfo(String label, DateTime time, Color color) {
     return Column(
       children: [
-        Text(
-          label,
-          style: TextStyle(fontWeight: FontWeight.bold, color: color),
+        Align(alignment: AlignmentDirectional.topStart,
+          child: Text(
+            label,
+            style: TextStyle(fontWeight: FontWeight.bold, color: color),
+          ),
         ),
-        Chip(
-          label: Text(DateFormat('dd-MM-yyyy : kk:mm').format(time)),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Chip(
+              label: Text(
+                DateFormat('dd-MM-yyyy').format(time),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber,fontSize: 12.sp),
+              ),
+              backgroundColor: Colors.purple,
+            ),
+            _colon(),
+            Chip(
+              label: Text(
+                DateFormat('kk:mm').format(time),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber,fontSize: 12.sp),
+              ),
+              backgroundColor: Colors.purple,
+            ),
+
+          ],
         ),
       ],
     );

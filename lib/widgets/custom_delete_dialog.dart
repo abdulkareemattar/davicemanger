@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 void showDeleteConfirmationDialog(
     {required BuildContext context,
     required String deleteText,
-    required Function onDeleteFun}) {
+    required void Function () onDeleteFun}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -42,9 +42,8 @@ void showDeleteConfirmationDialog(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            onPressed: () {
-              onDeleteFun;
-            },
+            onPressed:
+              onDeleteFun
           ),
         ],
       );

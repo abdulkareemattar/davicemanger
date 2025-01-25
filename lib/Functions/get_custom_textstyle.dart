@@ -15,7 +15,7 @@ TextStyle getTextStyle(
                       color: Colors.black, blurRadius: 1, offset: Offset(1, 1))
                 ]
               : null,
-          fontSize: 20.sp,
+          fontSize: 18.sp,
           fontWeight: FontWeight.bold,
           color: color);
     case FontTypeEnum.headLineMid:

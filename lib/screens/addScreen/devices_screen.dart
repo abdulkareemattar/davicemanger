@@ -6,6 +6,7 @@ import 'package:untitled8/screens/addScreen/showReservationsDialog.dart';
 import 'package:untitled8/services/reservation_service.dart';
 import 'package:untitled8/widgets/custom_gridview.dart';
 import 'package:untitled8/widgets/custom_slidable.dart';
+import 'package:untitled8/widgets/custom_textformfield.dart';
 
 import '../../Functions/get_device_icon.dart';
 import '../../services/hive_service.dart';
@@ -25,157 +26,195 @@ class MyDevicesScreen extends StatelessWidget {
     final myReservationService =
         Provider.of<ReservationService>(context, listen: true);
 
-    return myHiveService.devices.isEmpty
-        ? const NoDataScreen()
-        : Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            Padding(
-              padding: EdgeInsets.only(
-                top: 10.h,
-                left: 20.w,
-                right: 20.w,
-              ),
-              child: SizedBox(
-                height: 50.h,
-                width: double.infinity,
-                child: Row(
-                  children: [
-                    Chip(
-                      label: Text(
-                        'My devices',
-                        style: TextStyle(
-                            shadows: const [
-                              BoxShadow(
-                                  color: Colors.black,
-                                  blurRadius: 1,
-                                  offset: Offset(1, 1))
-                            ],
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber[700]),
-                      ),
-                    ),
-                    const Spacer(),
-                    ActionChip(disabledColor: Colors.red,
-                      label: Text(
-                        'Clear All',
-                        style: TextStyle(
-                            shadows: const [
-                              BoxShadow(
-                                  color: Colors.black,
-                                  blurRadius: 1,
-                                  offset: Offset(1, 1))
-                            ],
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
-                      ),
-                      backgroundColor: Colors.red,
-                      onPressed: () => showDeleteConfirmationDialog(
-                          context: context,
-                          deleteText:
-                              'Are you sure you want to delete all devices? ',
-                          onDeleteFun: () {
-                            myHiveService.deleteAllDevices();
-                            Navigator.of(context).pop();
-                          }),
-                    ),
-                  ],
+
+    if (myHiveService.devices.isEmpty) {
+      return const NoDataScreen();
+    } else {
+      return Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(right: 20.w, left: 20.w, top: 20.h),
+            child: Row(
+              children: [
+                Chip(
+                  backgroundColor: Colors.purpleAccent,
+                  label: Text(
+                    'My devices',
+                    style: TextStyle(
+                        shadows: const [
+                          BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                              offset: Offset(1, 1))
+                        ],
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
-                child: CustomGridview(
-                  itemCount: myHiveService.devices.length,
-                  itemBuilder: (context, deviceIndex) {
-                    return CustomSlidable(
-                      editFunction: () {
-                        openBottomSheet(
-                            context,
-                            EditDevice(
-                              deviceIndex: deviceIndex,
-                            ));
-                      },
-                      keyY: Key(myHiveService.devices[deviceIndex].id),
-                      deleteFunction: () {
-                        showDeleteConfirmationDialog(
-                            context: context,
-                            deleteText:
-                                'Are you sure you want to delete this device?',
-                            onDeleteFun: () {
-                              myHiveService.deleteDevice(index: deviceIndex);
-                              Navigator.of(context).pop();
-                            });
-                      },
-                      child: CustomCard(
-                        iconOfTrailing: const Icon(
-                          Icons.add,
-                          color: Colors.black,
-                        ),
-                        onTapOnTrailing: () {
-                          showAddReservationDialog(
-                              context: context,
-                              deviceIndex: deviceIndex,
-                              notDoublePop: false);
-                        },
-                        onTap: () => showDeviceReservationsDialog(
-                            reservationService: myReservationService,
-                            hive: myHiveService,
-                            deviceIndex: deviceIndex,
-                            context: context,
-                            notDoublePop: true),
-                        colorOfCard: getDeviceIcon(
-                                type: myHiveService.devices[deviceIndex].type)
-                            .color,
-                        device: myHiveService.devices[deviceIndex],
-                        id: myHiveService.devices[deviceIndex].id,
-                        isReserved: myHiveService.devices[deviceIndex].reserved,
-                        index: deviceIndex,
-                        leading: getDeviceIcon(
-                            type: myHiveService.devices[deviceIndex].type),
-                        title: Text(myHiveService.devices[deviceIndex].name,
-                            overflow: TextOverflow.visible,
-                            maxLines: 3,
-                            softWrap: true,
-                            style: getTextStyle(
-                                size: 12.sp,
-                                type: FontTypeEnum.customHeadLine,
-                                color: getDeviceIcon(
-                                        type: myHiveService
-                                            .devices[deviceIndex].type)
-                                    .color)),
-                        subtitle: Column(
-                          children: [
-                            Text(
-                              '${myHiveService.devices[deviceIndex].price} \$ ',
-                              style: getTextStyle(
-                                  type: FontTypeEnum.headLineSmall,
-                                  color: Colors.green),
-                            ),
-                            Text(
-                              'Per Hour',
-                              style: getTextStyle(
-                                  type: FontTypeEnum.customHeadLine,
-                                  size: 10.sp,
-                                  color: Colors.green),
-                            ),
-                          ],
-                        ),
-                        colorOfReservedCircle: (myReservationService
-                                .getCurrentReservations(deviceIndex)
-                                .isEmpty)
-                            ? Colors.red
-                            : Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(double.infinity),
-                        ),
-                      ),
-                    );
-                  },
+                const Spacer(),
+                ActionChip(
+                  disabledColor: Colors.red,
+                  label: Text(
+                    'Clear All',
+                    style: TextStyle(
+                        shadows: const [
+                          BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                              offset: Offset(1, 1))
+                        ],
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  backgroundColor: Colors.red,
+                  onPressed: () => showDeleteConfirmationDialog(
+                      context: context,
+                      deleteText:
+                          'Are you sure you want to delete all devices?',
+                      onDeleteFun: () {
+                        myHiveService.deleteAllDevices();
+                        Navigator.of(context).pop();
+                      }),
                 ),
-              ),
+              ],
             ),
-          ]);
+          ),
+          CustomTextFormField(
+            onChanged: (query) {
+              myHiveService.filterDevices(query);
+            },
+            label: const Row(
+              children: [
+                Text('Search'),
+                Spacer(),
+                Icon(Icons.search),
+              ],
+            ),
+            keyboard: TextInputType.text,
+            txt: 'Search',
+          ),
+          Expanded(
+            child: Consumer<HiveService>(
+              builder: (context, hiveService, child) {
+                final filteredDevices = hiveService.filteredDevices;
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: filteredDevices.isEmpty
+                            ? const Center(child: Text("No devices found."))
+                            : CustomGridview(
+                                itemCount: filteredDevices.length,
+                                itemBuilder: (context, deviceIndex) {
+                                  if (deviceIndex >= filteredDevices.length) {
+                                    return Center(
+                                      child: Text("Invalid device index."),
+                                    );
+                                  }
+                                  final myDevice = filteredDevices[deviceIndex];
+                                  return CustomSlidable(
+                                    editFunction: () {
+                                      openBottomSheet(
+                                        context,
+                                        EditDevice(deviceId: myDevice.id),
+                                      );
+                                    },
+                                    keyY: Key(myDevice.id),
+                                    deleteFunction: () =>
+                                        showDeleteConfirmationDialog(
+                                            context: context,
+                                            deleteText:
+                                                'Are You sure that You want to delete this device?',
+                                            onDeleteFun: () async {
+                                              await myHiveService
+                                                  .deleteDeviceById(
+                                                      id: myDevice.id);
+                                              Navigator.of(context).pop();
+                                            }),
+                                    child: CustomCard(
+                                      iconOfTrailing: const Icon(Icons.add,
+                                          color: Colors.black),
+                                      onTapOnTrailing: () {
+                                        showAddReservationDialog(
+                                          context: context,
+                                          deviceId: myDevice.id,
+                                          notDoublePop: true,
+                                          hiveService: hiveService,
+                                        );
+                                      },
+                                      onTap: () => showDeviceReservationsDialog(
+                                        reservationService:
+                                            myReservationService,
+                                        hive: myHiveService,
+                                        deviceId: myDevice.id,
+                                        context: context,
+                                        notDoublePop: true,
+                                      ),
+                                      colorOfCard:
+                                          getDeviceIcon(type: myDevice.type)
+                                              .color,
+                                      device: myDevice,
+                                      id: myDevice.id,
+                                      index: deviceIndex,
+                                      leading:
+                                          getDeviceIcon(type: myDevice.type),
+                                      title: Text(
+                                        myDevice.name,
+                                        overflow: TextOverflow.visible,
+                                        maxLines: 3,
+                                        softWrap: true,
+                                        style: getTextStyle(
+                                          size: 12,
+                                          type: FontTypeEnum.customHeadLine,
+                                          color:
+                                              getDeviceIcon(type: myDevice.type)
+                                                  .color,
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        children: [
+                                          Text(
+                                            '${myDevice.price} \$ ',
+                                            style: getTextStyle(
+                                                type:
+                                                    FontTypeEnum.headLineSmall,
+                                                color: Colors.green),
+                                          ),
+                                          Text(
+                                            'Per Hour',
+                                            style: getTextStyle(
+                                                type:
+                                                    FontTypeEnum.customHeadLine,
+                                                size: 10,
+                                                color: Colors.green),
+                                          ),
+                                        ],
+                                      ),
+                                      colorOfReservedCircle:
+                                              myDevice.reservations.isNotEmpty
+                                          ? Colors.green
+                                          : Colors.red,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            double.infinity),
+                                      ), isReserved: myDevice.reservations.isNotEmpty,
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -54,7 +55,13 @@ class AddDeviceForm extends StatelessWidget {
                   return null;
                 },
                 controller: _name,
-                label: 'Device Name',
+                label: Row(
+                  children: [
+                    Text('Device Name'),
+                    Spacer(),
+                    Icon(FluentIcons.device_eq_16_filled)
+                  ],
+                ),
                 keyboard: TextInputType.name,
               ),
               CustomTextFormField(
@@ -68,7 +75,13 @@ class AddDeviceForm extends StatelessWidget {
                   return null;
                 },
                 controller: _price,
-                label: 'Price per hour',
+                label: Row(
+                  children: [
+                    Text('Price per hour'),
+                    Spacer(),
+                    Icon(FluentIcons.money_16_filled)
+                  ],
+                ),
                 keyboard: TextInputType.number,
               ),
               CustomDropdown(
@@ -90,7 +103,6 @@ class AddDeviceForm extends StatelessWidget {
                             device: MyDevice(reservations: [],
                               customerName: null,
                               type: myHiveService.type!,
-                              reserved: myHiveService.isReserved,
                               name: _name.text,
                               id: uuid.v4(),
                               price: _price.text,

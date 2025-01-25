@@ -1,3 +1,4 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +51,13 @@ class EditReservationDialog extends StatelessWidget {
                     value.isEmpty ? "Please Enter Customer's username" : null,
                 txt: "Enter the customer name :",
                 controller: nameController,
-                label: 'Customer Name',
+                label: Row(
+                  children:[
+                    Text('Customer Name'),
+                    Spacer(),
+                    Icon(FluentIcons.person_add_32_regular)
+                  ]
+                ),
                 keyboard: TextInputType.text,
               ),
               CustomBasicDateTimeField(
@@ -60,7 +67,13 @@ class EditReservationDialog extends StatelessWidget {
                 initialValue: currentReservation.startTime,
                 txt:
                     'Enter The (date & time) that you will reserve this device at :',
-                label: 'Start Date & Time',
+                label: Row(
+                  children: [
+                    Text('Start Date & Time'),
+                    Spacer(),
+                    Icon(FluentIcons.calendar_12_filled)
+                  ],
+                ),
                 onShowPicker: (context, current) async {
                   return startTime =
                       await getTime(context: context, currentValue: current);
@@ -73,7 +86,13 @@ class EditReservationDialog extends StatelessWidget {
                 initialValue: currentReservation.endTime,
                 txt:
                     'Enter The (date & time) that you will end reserve this device at :',
-                label: 'End Date & Time',
+                label: Row(
+                  children: [
+                    Text('End Date & Time'),
+                    Spacer(),
+                    Icon(FluentIcons.calendar_12_filled)
+                  ],
+                ),
                 onShowPicker: (context, current) async {
                   return endTime =
                       await getTime(context: context, currentValue: current);
@@ -85,7 +104,7 @@ class EditReservationDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: ()async {
+          onPressed: () async {
             if ((nameController.text.isNotEmpty) &&
                 (!checkIfDateConflict(
                     reservationID: myHiveService.devices[deviceIndex]
@@ -103,7 +122,7 @@ class EditReservationDialog extends StatelessWidget {
                       startTime: startTime,
                       endTime: endTime),
                   reservationIndex: reservationIndex,
-                  deviceIndex: deviceIndex);
+                  deviceId:  myHiveService.devices[deviceIndex].id);
               showCustomSnackBar(context: context, txt: " Reservation Edited ");
               if (notDoublePop) {
                 Navigator.pop(context);

@@ -7,28 +7,24 @@ import 'package:untitled8/services/reservation_service.dart';
 class CustomCounter extends StatelessWidget {
   final bool enableDescriptions;
   final Color textColor;
-  final Color colonColor;
   final double baseFontSize;
-  final int deviceIndex;
+  final String deviceId;
   final int reservationIndex;
 
   const CustomCounter({
     super.key,
     this.enableDescriptions = false,
     this.textColor = Colors.black,
-    this.colonColor = Colors.red,
     this.baseFontSize = 30.0,
-    required this.deviceIndex,
+    required this.deviceId,
     required this.reservationIndex,
   });
 
   @override
   Widget build(BuildContext context) {
-    ReservationService myReservationService =
-        Provider.of<ReservationService>(context, listen: true);
     HiveService myHiveService = Provider.of<HiveService>(context, listen: true);
-
-    // استخدام قيم الحجز مع التحقق من وجودها
+    ReservationService myReservationService = Provider.of<ReservationService>(context, listen: true);
+    int deviceIndex = myHiveService.devices.indexWhere((d) => d.id == deviceId);
     Duration duration = Duration(
         seconds: myHiveService
             .devices[deviceIndex].reservations[reservationIndex].remainingTime);
@@ -66,9 +62,10 @@ class CustomCounter extends StatelessWidget {
     return const Center(
       child: Text(":",
           style: TextStyle(
-              fontSize: 50, fontWeight: FontWeight.bold, color: Colors.red)),
+              fontSize: 50, fontWeight: FontWeight.bold, color: Colors.white)),
     );
   }
+
   Widget _buildTimeBlock(String countdownValue, String? description) {
     return Center(
       child: Container(
@@ -103,7 +100,7 @@ class CustomCounter extends StatelessWidget {
 
 void showCounterDialog({
   required BuildContext context,
-  required int deviceIndex,
+  required String deviceId,
   required int reservationIndex,
 }) {
   showDialog(
@@ -112,14 +109,14 @@ void showCounterDialog({
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text(
-          "Countdown Timer ",
+          "Countdown Timer",
           style: TextStyle(
               fontSize: 20.sp,
-              color: Colors.purple,
+              color: Colors.white,
               fontWeight: FontWeight.bold),
         ),
         content: CustomCounter(
-            deviceIndex: deviceIndex, reservationIndex: reservationIndex),
+            deviceId: deviceId, reservationIndex: reservationIndex),
         actions: [
           TextButton(
             onPressed: () {

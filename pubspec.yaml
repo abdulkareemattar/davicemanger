@@ -20,6 +20,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
   font_awesome_flutter: ^10.0.0
+  fluentui_system_icons: ^1.1.271
   lottie: ^3.1.2
   datetime_picker_formfield_new: ^2.1.0
   syncfusion_flutter_calendar: ^27.2.3

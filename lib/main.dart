@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled8/providers/bottom_navbar_provider.dart';
-import 'package:untitled8/providers/search_filter_provider.dart';
 import 'package:untitled8/services/hive_service.dart';
 import 'package:untitled8/services/reservation_service.dart';
 
@@ -38,10 +37,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => hiveService),
         ChangeNotifierProvider(create: (_) => BottomNavbarProvider()),
         ChangeNotifierProvider(create: (_) => ReservationService(hiveService)),
-        ChangeNotifierProvider(
-            create: (_) => SearchFilterProvider(
-                hiveService: hiveService,
-                reservationService: reservationService)),
       ],
       child: const MyApp(),
     ),
